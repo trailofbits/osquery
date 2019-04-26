@@ -1,0 +1,18 @@
+table_name("domain_user_groups")
+description("Domain system user group relationships.")
+schema([
+])
+
+extended_schema(WINDOWS, [
+    #Column("uid", BIGINT, "User ID", index=True),
+    Column("user_sid", TEXT, "User ID", index=True),
+    Column("username", TEXT, "Username", index=True),
+    #Column("gid", BIGINT, "Group ID", index=True),
+    Column("group_sid", TEXT, "Group ID", index=True),
+    Column("groupname", TEXT, "Groupname", index=True),
+    Column("domain", TEXT, "Domain"),
+])
+implementation("domain_user_groups@genDomainUserGroups")
+examples([
+  "select * from domain_user_groups"
+])

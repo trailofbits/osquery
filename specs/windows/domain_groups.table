@@ -1,0 +1,21 @@
+table_name("domain_groups")
+description("Domain specfic system groups.")
+schema([
+])
+
+# conservatively start off with everything only on Windows
+extended_schema(WINDOWS, [
+    #Column("gid", BIGINT, "Unsigned int64 group ID", index=True),
+    #Column("gid_signed", BIGINT, "A signed int64 version of gid"),
+    Column("groupname", TEXT, "Canonical local group name"),
+    Column("group_sid", TEXT, "Unique group ID", index=True),
+    Column("comment", TEXT, "Remarks or comments associated with the group"),
+    Column("domain", TEXT, "Domain of this group"),
+    Column("scope", TEXT, "Scope of this group"),
+])
+
+implementation("domain_groups@genDomainGroups")
+examples([
+  "select * from domain_groups where gid = 0;",
+  "select gid, groupname from domain_groups;",
+])

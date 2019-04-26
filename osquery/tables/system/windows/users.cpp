@@ -16,6 +16,7 @@
 #include <osquery/logger.h>
 
 #include "osquery/tables/system/windows/registry.h"
+#include "osquery/tables/system/windows/users.h"
 #include <osquery/utils/conversions/tryto.h>
 #include <osquery/utils/conversions/windows/strings.h>
 #include <osquery/process/process.h>
@@ -112,16 +113,22 @@ void processRoamingProfiles(const std::set<std::string>& processedSids,
   }
 }
 
-void processLocalAccounts(std::set<std::string>& processedSids,
-                          QueryData& results) {
+void processDomainAccounts(const std::wstring& domainNameW,
+                           std::set<std::string>& processedSids,
+                           QueryData& results) {
   unsigned long dwUserInfoLevel = 3;
   unsigned long dwNumUsersRead = 0;
   unsigned long dwTotalUsers = 0;
   unsigned long resumeHandle = 0;
   unsigned long ret = 0;
   LPBYTE userBuffer = nullptr;
+
+  auto serverName = domainNameW.empty() ? nullptr : domainNameW.c_str();
+
   do {
-    ret = NetUserEnum(nullptr,
+    std::cout << "processDomainAccounts: loop begin: CallingNetUserEnum ; domain name: " <<
+      wstringToString(domainNameW.c_str()) << "\n";
+    ret = NetUserEnum(serverName,
                       dwUserInfoLevel,
                       0,
                       &userBuffer,
@@ -130,28 +137,45 @@ void processLocalAccounts(std::set<std::string>& processedSids,
                       &dwTotalUsers,
                       &resumeHandle);
 
+    std::cout << "processDomainAccounts: NetUserEnum ret: " << ret << "\n";
+    std::cout << "processDomainAccounts: NetUserEnum dwNumUsersRead: " << dwNumUsersRead << "\n";
+    std::cout << "processDomainAccounts: NetUserEnum dwTotalUsers: " << dwTotalUsers << "\n";
+    /* std::cout << "processDomainAccounts: NetUserEnum userBuffer: " << (void*)userBuffer << "\n"; */
+
+    std::cout << "processDomainAccounts: userbuffer != nullptr: " << (userBuffer != nullptr) << "\n";
+
     if ((ret == NERR_Success || ret == ERROR_MORE_DATA) &&
         userBuffer != nullptr) {
+      std::cout << "processDomainAccounts: Success/Moredata ; processing users: " << dwNumUsersRead<< " users\n";
       auto iterBuff = LPUSER_INFO_3(userBuffer);
       for (size_t i = 0; i < dwNumUsersRead; i++) {
+      /* for (size_t i = 0; i < dwNumUsersRead;) { */
         // User level 4 contains the SID value
         unsigned long dwDetailedUserInfoLevel = 4;
         LPBYTE userLvl4Buff = nullptr;
-        ret = NetUserGetInfo(nullptr,
+
+        std::cout << "processDomainAccounts: calling NetUserGetInfo: " << wstringToString(domainNameW.c_str()) << " " << wstringToString(iterBuff->usri3_name) << "\n";
+        ret = NetUserGetInfo(serverName,
                              iterBuff->usri3_name,
                              dwDetailedUserInfoLevel,
                              &userLvl4Buff);
 
+        std::cout << "processDomainAccounts: NetUserGetInfo ret: " << ret << "\n";
+
         if (ret != NERR_Success || userLvl4Buff == nullptr) {
+          std::cout << "processDomainAccounts: NetUserGetInfo error\n";
           if (userLvl4Buff != nullptr) {
+            std::cout << "processDomainAccounts: NetUserGetInfo error: freeing userLvl4Buff\n";
             NetApiBufferFree(userLvl4Buff);
           }
           VLOG(1) << "Failed to get sid for "
                   << wstringToString(iterBuff->usri3_name)
                   << " with error code " << ret;
-          iterBuff++;
+          /* iterBuff++; */
           continue;
         }
+
+        std::cout << "processDomainAccounts: NetUserGetInfo succeeded\n";
 
         // Will return empty string on fail
         auto sid = LPUSER_INFO_4(userLvl4Buff)->usri4_user_sid;
@@ -175,6 +199,10 @@ void processLocalAccounts(std::set<std::string>& processedSids,
         if (userLvl4Buff != nullptr) {
           NetApiBufferFree(userLvl4Buff);
         }
+        if (!domainNameW.empty()) {
+          r["domain"] = wstringToString(domainNameW.c_str());
+        }
+        std::cout << "processDomainAccounts: NetUserGetInfo succeeded; row added\n";
 
         results.push_back(r);
         iterBuff++;
@@ -184,10 +212,18 @@ void processLocalAccounts(std::set<std::string>& processedSids,
       LOG(WARNING) << "NetUserEnum failed with " << ret;
     }
     if (userBuffer != nullptr) {
+        std::cout << "processDomainAccounts: Freeing userBuffer\n";
       NetApiBufferFree(userBuffer);
     }
+    std::cout << "processDomainAccounts: End of do/while loop\n";
 
   } while (ret == ERROR_MORE_DATA);
+  std::cout << "processDomainAccounts: Returning\n";
+}
+
+void processLocalAccounts(std::set<std::string>& processedSids,
+                          QueryData& results) {
+  processDomainAccounts(std::wstring(), processedSids, results);
 }
 
 QueryData genUsers(QueryContext& context) {

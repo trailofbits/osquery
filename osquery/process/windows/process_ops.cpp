@@ -94,7 +94,7 @@ uint32_t getGidFromSid(PSID sid) {
   return gid;
 }
 
-std::unique_ptr<BYTE[]> getSidFromUsername(std::wstring accountName) {
+std::unique_ptr<BYTE[]> getSidFromUsername(std::wstring accountName, LPCWSTR domainNameW) {
   if (accountName.empty()) {
     LOG(INFO) << "No account name provided";
     return nullptr;
@@ -105,7 +105,7 @@ std::unique_ptr<BYTE[]> getSidFromUsername(std::wstring accountName) {
   DWORD sidBufferSize = 0;
   DWORD domainNameSize = 0;
   auto eSidType = SidTypeUnknown;
-  auto ret = LookupAccountNameW(nullptr,
+  auto ret = LookupAccountNameW(domainNameW,
                                 accountName.c_str(),
                                 nullptr,
                                 &sidBufferSize,
@@ -114,7 +114,7 @@ std::unique_ptr<BYTE[]> getSidFromUsername(std::wstring accountName) {
                                 &eSidType);
 
   if (ret == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
-    LOG(INFO) << "Failed to lookup accoun name "
+    LOG(INFO) << "Failed to lookup account name "
               << wstringToString(accountName.c_str()) << " with "
               << GetLastError();
     return nullptr;
@@ -126,7 +126,7 @@ std::unique_ptr<BYTE[]> getSidFromUsername(std::wstring accountName) {
 
   // Call LookupAccountNameW() a second time to actually obtain the SID for the
   // given account name:
-  ret = LookupAccountNameW(nullptr,
+  ret = LookupAccountNameW(domainNameW,
                            accountName.c_str(),
                            sidBuffer.get(),
                            &sidBufferSize,
@@ -134,7 +134,7 @@ std::unique_ptr<BYTE[]> getSidFromUsername(std::wstring accountName) {
                            &domainNameSize,
                            &eSidType);
   if (ret == 0) {
-    LOG(INFO) << "Failed to lookup accoun name "
+    LOG(INFO) << "Failed to lookup account name "
               << wstringToString(accountName.c_str()) << " with "
               << GetLastError();
     return nullptr;

@@ -114,6 +114,28 @@ struct tm* localtime_r(time_t* t, struct tm* result) {
   _localtime64_s(result, t);
   return result;
 }
+
+std::wstring getWinDomainName() {
+  std::wstring name;
+  DWORD size = 0;
+
+  // Find out how much space is needed
+  BOOL ret = GetComputerNameExW(ComputerNameDnsDomain, NULL, &size);
+  if (ret) {
+    LOG(INFO) << "GetComputerNameExW succeeded and should not have.";
+    return std::wstring();
+  }
+
+  // Allocate space and get name
+  name.resize(size - 1);  // size includes terminating NULL
+  ret = GetComputerNameExW(ComputerNameDnsDomain, &name[0], &size);
+  if (ret == 0) {
+    LOG(INFO) << "GetComputerNameExW failed with return value: " << ret;
+    return std::wstring();
+  }
+
+  return name;
+}
 #endif
 
 std::string getHostname() {

@@ -68,6 +68,7 @@ QueryData genLoggedInUsers(QueryContext& context) {
       continue;
     }
     const auto wtsSession = reinterpret_cast<WTSINFOA*>(sessionInfo);
+    std::cout  << "wtsSession->UserName: " << wtsSession->UserName << "\n";
     r["user"] = SQL_TEXT(wtsSession->UserName);
     r["type"] = SQL_TEXT(kSessionStates.at(pSessionInfo[i].State));
     r["tty"] = pSessionInfo[i].pSessionName == nullptr

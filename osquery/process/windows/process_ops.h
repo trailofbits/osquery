@@ -34,7 +34,7 @@ std::string psidToString(PSID sid);
  *
  * @returns a unique_ptr to a PSID
  */
-std::unique_ptr<BYTE[]> getSidFromUsername(std::wstring accountName);
+std::unique_ptr<BYTE[]> getSidFromUsername(std::wstring accountName, LPCWSTR domainNameW=nullptr);
 
 /**
  * @brief Get the relative identifier (RID) from a security identifier (SID).

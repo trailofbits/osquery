@@ -17,6 +17,7 @@
 #include <osquery/sql.h>
 
 #include "osquery/tables/system/windows/registry.h"
+#include "osquery/tables/system/windows/user_groups.h"
 #include <osquery/utils/conversions/tryto.h>
 #include <osquery/utils/conversions/windows/strings.h>
 #include <osquery/process/process.h>
@@ -25,21 +26,51 @@
 namespace osquery {
 
 std::string psidToString(PSID sid);
-uint32_t getGidFromSid(PSID sid);
+int getGidFromSid(PSID sid);
 
 namespace tables {
 
-void processLocalUserGroups(std::string uid,
-                            std::string user,
-                            QueryData& results) {
+Row getUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName,
+                    const std::string& username) {
+  auto sid = getSidFromUsername(groupname);
+  auto gid = getGidFromSid(static_cast<PSID>(sid.get()));
+
+  Row r;
+  r["user_sid"] = uid;
+  r["group_sid"] = INTEGER(gid);
+  if (!domainName.empty()) {
+    r["domain"] = wstringToString(domainName.c_str());
+  }
+  r["username"] = username;
+  r["groupname"] = wstringToString(groupname);
+  return r;
+}
+
+void processDomainUserGroups(const std::wstring& domainName,
+			     std::string uid,
+                             std::string user,
+                             QueryData& results
+                             ) {
   unsigned long userGroupInfoLevel = 0;
   unsigned long numGroups = 0;
   unsigned long totalUserGroups = 0;
   LOCALGROUP_USERS_INFO_0* ginfo = nullptr;
+  PSID sid = nullptr;
 
   unsigned long ret = 0;
 
-  ret = NetUserGetLocalGroups(nullptr,
+  auto serverName = domainName.empty() ? nullptr : domainName.c_str();
+
+  auto originalUsername = user;
+
+  if (!domainName.empty()) {
+    user = wstringToString(domainName.c_str()) + "\\" + user;
+  }
+
+  /* std::wcout << "serverName " << serverName << "\n"; */
+  /* std::cout << "user " << user << "\n"; */
+
+  ret = NetUserGetLocalGroups(serverName,
                               stringToWstring(user).c_str(),
                               userGroupInfoLevel,
                               1,
@@ -58,12 +89,8 @@ void processLocalUserGroups(std::string uid,
   }
 
   for (size_t i = 0; i < numGroups; i++) {
-    Row r;
-    auto sid = getSidFromUsername(ginfo[i].lgrui0_name);
-
-    r["uid"] = uid;
-    r["gid"] = BIGINT(getGidFromSid(static_cast<PSID>(sid.get())));
-
+    /* std::wcout << "  group name! " << ginfo[i].lgrui0_name << "\n"; */
+    Row r = getUserGroupRow(uid, ginfo[i].lgrui0_name, domainName, originalUsername);
     results.push_back(r);
   }
 
@@ -76,14 +103,14 @@ QueryData genUserGroups(QueryContext& context) {
   QueryData results;
 
   SQL sql(
-      "SELECT uid, username FROM users WHERE username NOT IN ('SYSTEM', "
+      "SELECT uuid, username FROM users WHERE username NOT IN ('SYSTEM', "
       "'LOCAL SERVICE', 'NETWORK SERVICE')");
   if (!sql.ok()) {
     LOG(WARNING) << sql.getStatus().getMessage();
   }
 
   for (auto r : sql.rows()) {
-    processLocalUserGroups(r["uid"], r["username"], results);
+    processDomainUserGroups(std::wstring(), r["uid"], r["username"], results);
   }
 
   return results;

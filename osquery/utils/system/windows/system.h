@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <string>
 #include <ctime>
 
 #ifndef NOMINMAX
@@ -81,4 +82,15 @@ void alarm(int /* noop */);
 /// a DWORD.
 using pid_t = unsigned long;
 using PlatformPidType = void*;
+
+
+/**
+ * @brief Getter for a host's domain name
+ *
+ * @return a string representation of the hosts domain name
+ * if the host is joined to a domain, otherwise it returns an empty string
+ * if the host is joined to a domain, otherwise it returns an empty string
+ */
+std::wstring getWinDomainName();
+
 } // namespace osquery

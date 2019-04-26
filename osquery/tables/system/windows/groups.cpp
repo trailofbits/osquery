@@ -19,6 +19,7 @@
 #include <osquery/process/windows/process_ops.h>
 
 #include "osquery/tables/system/windows/registry.h"
+#include "osquery/tables/system/windows/groups.h"
 #include <osquery/utils/conversions/tryto.h>
 #include <osquery/utils/conversions/windows/strings.h>
 
@@ -26,7 +27,51 @@ namespace osquery {
 
 namespace tables {
 
-void processLocalGroups(QueryData& results) {
+// Fill out a row based on domain name, group name, and comment info
+// @scope: If not empty, use this as the "scope" column
+Status getGroupRow(const std::wstring& domainNameW,
+                   LPCWSTR groupName,
+                   LPCWSTR comment,
+                   const std::string& scope,
+                   Row& r) {
+
+  std::wstring fqGroupName = groupName;
+
+  if (!domainNameW.empty() && !fqGroupName.empty()) {
+    fqGroupName = domainNameW + L"\\" + fqGroupName;
+  }
+  std::wcout << "fqGroupName: " << fqGroupName << "\n";
+  std::wcout << "groupName: " << groupName << "\n";
+
+  auto sidSmartPtr = getSidFromUsername(groupName, domainNameW.c_str());
+
+  if (sidSmartPtr == nullptr) {
+    return Status::failure("Failed to find a SID for group: " +  wstringToString(fqGroupName.c_str()));
+  }
+
+  auto sidPtr = static_cast<PSID>(sidSmartPtr.get());
+
+  // Windows' extended schema, including full SID and comment strings:
+  r["group_sid"] = psidToString(sidPtr);
+  r["comment"] = wstringToString(comment);
+
+  // Common schema, normalizing group information with POSIX:
+  r["gid"] = INTEGER(getRidFromSid(sidPtr));
+  r["gid_signed"] = INTEGER(getRidFromSid(sidPtr));
+  r["groupname"] = wstringToString(groupName);
+  if (!domainNameW.empty()) {
+    r["domain"] = wstringToString(domainNameW.c_str());
+  }
+  if (!scope.empty()) {
+    r["scope"] = scope;
+  }
+
+  return Status::success();
+}
+
+
+void processGroups(const std::wstring& domainNameW,
+                   QueryData& results, bool scope_column) {
   unsigned long groupInfoLevel = 1;
   unsigned long numGroupsRead = 0;
   unsigned long totalGroups = 0;
@@ -37,8 +82,11 @@ void processLocalGroups(QueryData& results) {
   std::unique_ptr<BYTE[]> sidSmartPtr = nullptr;
   PSID sidPtr = nullptr;
 
+  auto serverName = domainNameW.empty() ? nullptr : domainNameW.c_str();
+  const std::string scope = scope_column ? "Domain local" : "";
+
   do {
-    ret = NetLocalGroupEnum(nullptr,
+    ret = NetLocalGroupEnum(domainNameW.c_str(),
                             groupInfoLevel,
                             (LPBYTE*)&lginfo,
                             MAX_PREFERRED_LENGTH,
@@ -52,28 +100,12 @@ void processLocalGroups(QueryData& results) {
     }
 
     for (size_t i = 0; i < numGroupsRead; i++) {
-      Row r;
-      sidSmartPtr = getSidFromUsername(lginfo[i].lgrpi1_name);
-
-      if (sidSmartPtr != nullptr) {
-        sidPtr = static_cast<PSID>(sidSmartPtr.get());
-
-        // Windows' extended schema, including full SID and comment strings:
-        r["group_sid"] = psidToString(sidPtr);
-        r["comment"] = wstringToString(lginfo[i].lgrpi1_comment);
-
-        // Common schema, normalizing group information with POSIX:
-        auto rid = getRidFromSid(sidPtr);
-        r["gid"] = BIGINT(rid);
-        r["gid_signed"] = INTEGER(rid);
-        r["groupname"] = wstringToString(lginfo[i].lgrpi1_name);
-        results.push_back(r);
-      } else {
-        // If LookupAccountNameW failed to find a SID, don't add a row to the
-        // table.
-        LOG(WARNING)
-            << "Failed to find a SID from LookupAccountNameW for group: "
-            << lginfo[i].lgrpi1_name;
+      Row row;
+      auto ret = getGroupRow(domainNameW, lginfo[i].lgrpi1_name,
+                             lginfo[i].lgrpi1_comment, scope, row);
+      // Only add a row if we successfully created one
+      if (ret.ok()) {
+        results.push_back(row);
       }
     }
 
@@ -87,7 +119,9 @@ void processLocalGroups(QueryData& results) {
 QueryData genGroups(QueryContext& context) {
   QueryData results;
 
-  processLocalGroups(results);
+  std::cout << "genGroups\n";
+
+  processGroups(std::wstring(), results);
 
   return results;
 }
