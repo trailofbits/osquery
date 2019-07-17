@@ -26,12 +26,11 @@
 namespace osquery {
 
 std::string psidToString(PSID sid);
-/* int getGidFromSid(PSID sid); */
-uint32_t getGidFromSid(PSID sid);
+int getGidFromSid(PSID sid);
 
 namespace tables {
 
-Row getUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName,
+Row getDomainUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName,
                     const std::string& username) {
   auto sid = getSidFromUsername(groupname);
   auto gid = getGidFromSid(static_cast<PSID>(sid.get()));
@@ -47,10 +46,29 @@ Row getUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstrin
   return r;
 }
 
+Row getUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName,
+                    const std::string& username) {
+  auto sid = getSidFromUsername(groupname);
+  auto gid = getGidFromSid(static_cast<PSID>(sid.get()));
+
+  std::cout << "uid " << uid << "\n";
+
+  Row r;
+  r["uid"] = uid;
+  r["gid"] = INTEGER(gid);
+  return r;
+}
+
+/**
+ * Local groups are enumerated for a user, and callback is executed to
+ * to construct an appropriate row object for whatever table is currently
+ * being generated.
+ */
 void processDomainUserGroups(const std::wstring& domainName,
 			     std::string uid,
                              std::string user,
-                             QueryData& results
+                             QueryData& results,
+                             UserLocalGroupCallback callback
                              ) {
   unsigned long userGroupInfoLevel = 0;
   unsigned long numGroups = 0;
@@ -90,8 +108,7 @@ void processDomainUserGroups(const std::wstring& domainName,
   }
 
   for (size_t i = 0; i < numGroups; i++) {
-    /* std::wcout << "  group name! " << ginfo[i].lgrui0_name << "\n"; */
-    Row r = getUserGroupRow(uid, ginfo[i].lgrui0_name, domainName, originalUsername);
+    Row r = callback(uid, ginfo[i].lgrui0_name, domainName, originalUsername);
     results.push_back(r);
   }
 
@@ -100,19 +117,21 @@ void processDomainUserGroups(const std::wstring& domainName,
   }
 }
 
+
 QueryData genUserGroups(QueryContext& context) {
   QueryData results;
 
   SQL sql(
-      "SELECT uuid, username FROM users WHERE username NOT IN ('SYSTEM', "
+      "SELECT uid, username FROM users WHERE username NOT IN ('SYSTEM', "
       "'LOCAL SERVICE', 'NETWORK SERVICE')");
   if (!sql.ok()) {
     LOG(WARNING) << sql.getStatus().getMessage();
   }
 
   for (auto r : sql.rows()) {
-    processDomainUserGroups(std::wstring(), r["uid"], r["username"], results);
+    processDomainUserGroups(std::wstring(), r["uid"], r["username"], results, getUserGroupRow);
   }
+
 
   return results;
 }

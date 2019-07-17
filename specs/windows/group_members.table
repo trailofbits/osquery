@@ -1,0 +1,13 @@
+table_name("group_members")
+description("Local system member group relationships.")
+schema([
+])
+extended_schema(WINDOWS, [
+    Column("group_sid", TEXT, "group sid"),
+    Column("groupname", TEXT, ""),
+    Column("member_sid", TEXT, "user sid"),
+    Column("membername", TEXT, ""),
+    Column("member_type", TEXT, ""),
+    Column("domain", TEXT, ""),
+])
+implementation("group_members@genGroupMembers")

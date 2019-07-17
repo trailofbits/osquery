@@ -18,6 +18,7 @@
 #include <osquery/logger.h>
 
 #include "osquery/tables/system/windows/user_groups.h"
+#include "osquery/tables/system/windows/domain_user_groups.h"
 #include <osquery/process/windows/process_ops.h>
 #include <osquery/utils/conversions/windows/strings.h>
 #include <osquery/utils/system/system.h>
@@ -138,10 +139,19 @@ Status genDomainUserLocalGroupRow(
   return Status::success();
 }
 
+
+/**
+ * Members are enumerated for a local group, and callback is executed to
+ * to construct an appropriate row object for whatever table is currently
+ * being generated.
+ */
 Status genMembersOfLocalGroup(
     const std::wstring& domain,
     const std::string& groupname,
-    QueryData& results) {
+    QueryData& results,
+    LocalGroupMemberCallback callback
+    
+    ) {
 
   const DWORD infoLevel = 1; // Get SID and Name
   LPBYTE infoBuf = nullptr;
@@ -169,7 +179,7 @@ Status genMembersOfLocalGroup(
   for (DWORD i = 0; i < numMembersRead; i++) {
     auto& member = groupMembers[i];
     Row r;
-    auto gotRow = genDomainUserLocalGroupRow(domain, groupname, member, r);
+    auto gotRow = callback(domain, groupname, member, r);
     if (gotRow.ok()) {
       results.push_back(r);
     }
@@ -185,7 +195,7 @@ void genMembersOfGroup(
     const std::wstring& domain,
     const std::string& groupname,
     QueryData& results) {
-  auto ret = genMembersOfLocalGroup(domain, groupname, results);
+  auto ret = genMembersOfLocalGroup(domain, groupname, results, genDomainUserLocalGroupRow);
   if (ret.ok()) {
     return;
   }
@@ -224,7 +234,7 @@ void processDomainUserGlobalGroups(const std::wstring& domainName,
 
   for (DWORD i = 0; i < numGroups; i++) {
     /* std::wcout << "  group name! " << ginfo[i].grui0_name << "\n"; */
-    Row r = getUserGroupRow(uid, ginfo[i].grui0_name, domainName, user);
+    Row r = getDomainUserGroupRow(uid, ginfo[i].grui0_name, domainName, user);
     results.push_back(r);
   }
 
@@ -244,7 +254,7 @@ QueryData genDomainUserGroups(QueryContext& context) {
       std::string id;
       auto ret = accountNameToSidString(username, domain, id);
       if (ret.ok()) {
-        processDomainUserGroups(domain, id, username, results);
+        processDomainUserGroups(domain, id, username, results, getDomainUserGroupRow);
         processDomainUserGlobalGroups(domain, id, username, results);
       }
     }
@@ -268,7 +278,7 @@ QueryData genDomainUserGroups(QueryContext& context) {
     }
 
     for (auto user_row : sql.rows()) {
-      processDomainUserGroups(domain, user_row["uid"], user_row["username"], results);
+      processDomainUserGroups(domain, user_row["uid"], user_row["username"], results, getDomainUserGroupRow);
       processDomainUserGlobalGroups(domain, user_row["uid"], user_row["username"], results);
     }
 

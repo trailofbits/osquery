@@ -1,0 +1,13 @@
+table_name("group_flat_members")
+description("flat.")
+schema([
+])
+extended_schema(WINDOWS, [
+    Column("group_sid", TEXT, "group sid"),
+    Column("groupname", TEXT, ""),
+    Column("member_sid", TEXT, "user sid"),
+    Column("membername", TEXT, ""),
+    Column("path", TEXT, ""),
+    Column("domain", TEXT, ""),
+])
+implementation("group_flat_members@genGroupFlatMembers")

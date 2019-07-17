@@ -14,12 +14,15 @@
 namespace osquery {
 namespace tables {
 
-Row getUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName, const std::string& username);
+Row getDomainUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName, const std::string& username);
 
-/* void processDomainUserGroups(const std::string& domainName, */
+using UserLocalGroupCallback = std::function<Row(const std::string&, LPCWSTR, const std::wstring&, const std::string&)>;
+
 void processDomainUserGroups(const std::wstring& domainName,
 			     std::string uid,
                              std::string user,
-                             QueryData& results);
+                             QueryData& results,
+                             UserLocalGroupCallback callback
+                             );
 }
 }
