@@ -20,6 +20,8 @@
 #include "osquery/tables/system/windows/users.h"
 #include <osquery/utils/conversions/windows/strings.h>
 
+#include <iostream> // del this
+
 namespace osquery {
 std::string psidToString(PSID sid);
 

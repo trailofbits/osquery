@@ -20,6 +20,8 @@
 #include <osquery/utils/conversions/split.h>
 #include <osquery/utils/conversions/windows/strings.h>
 
+#include <iostream>
+
 const std::map<int, std::string> kSessionStates = {
     {WTSActive, "active"},
     {WTSDisconnected, "disconnected"},

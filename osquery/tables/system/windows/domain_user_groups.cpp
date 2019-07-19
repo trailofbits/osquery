@@ -23,9 +23,12 @@
 #include <osquery/utils/system/system.h>
 
 
+#include <iostream> // delete this
+
 namespace osquery {
 // TODO make a header for this?
-int getGidFromSid(PSID sid);
+/* int getGidFromSid(PSID sid); */
+uint32_t getGidFromSid(PSID sid);
 std::string psidToString(PSID sid);
 
 namespace tables {

@@ -23,6 +23,8 @@
 #include <osquery/utils/conversions/tryto.h>
 #include <osquery/utils/conversions/windows/strings.h>
 
+#include <iostream>
+
 namespace osquery {
 
 namespace tables {
