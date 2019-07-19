@@ -166,6 +166,9 @@ function(generateOsqueryTablesSystemSystemtable)
       windows/cpu_info.cpp
       windows/disk_info.cpp
       windows/drivers.cpp
+      windows/domain_users.cpp
+      windows/domain_user_groups.cpp
+      windows/domain_groups.cpp
       windows/groups.cpp
       windows/ie_extensions.cpp
       windows/intel_me.cpp
@@ -294,6 +297,9 @@ function(generateOsqueryTablesSystemSystemtable)
     list(APPEND platform_public_header_files
       windows/registry.h
       windows/certificates.h
+      windows/users.h
+      windows/user_groups.h
+      windows/groups.h
     )
   endif()
 
