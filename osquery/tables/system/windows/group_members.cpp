@@ -27,7 +27,7 @@
 namespace osquery {
 
 std::string psidToString(PSID sid);
-int getGidFromSid(PSID sid);
+uint32_t getGidFromSid(PSID sid);
 
 namespace tables {
 

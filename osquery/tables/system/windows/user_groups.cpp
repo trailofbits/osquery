@@ -23,10 +23,12 @@
 #include <osquery/process/process.h>
 #include <osquery/process/windows/process_ops.h>
 
+#include <iostream> // del
+
 namespace osquery {
 
 std::string psidToString(PSID sid);
-int getGidFromSid(PSID sid);
+uint32_t getGidFromSid(PSID sid);
 
 namespace tables {
 

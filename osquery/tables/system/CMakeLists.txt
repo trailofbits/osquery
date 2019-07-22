@@ -300,6 +300,7 @@ function(generateOsqueryTablesSystemSystemtable)
       windows/users.h
       windows/user_groups.h
       windows/groups.h
+      windows/domain_user_groups.h
     )
   endif()
 
