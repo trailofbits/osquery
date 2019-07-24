@@ -21,6 +21,8 @@
 
 namespace osquery {
 
+std::string getUsernameFromSid(const std::string& sidString);
+
 /**
 * @brief Windows helper function used by to convert a binary SID struct into a
 * string.

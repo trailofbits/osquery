@@ -165,6 +165,13 @@ void processDomainGlobalGroups(std::wstring& domainNameW, QueryData& results) {
 	} while (ret == ERROR_MORE_DATA);
 }
 
+void genDomainGroupFromSid(const std::wstring& domainName,
+                           const std::string& sidString,
+                           QueryData& results) {
+  auto username = getUsernameFromSid(sidString);
+  genDomainGroup(domainName, username, results);
+}
+
 QueryData genDomainGroups(QueryContext& context) {
   QueryData results;
 
@@ -175,6 +182,12 @@ QueryData genDomainGroups(QueryContext& context) {
     for (const auto& groupname : groupnames) {
       genDomainGroup(domainName, groupname, results);
     }
+  } else if (context.constraints["group_sid"].exists(EQUALS)) {
+    auto groupnames = context.constraints["group_sid"].getAll(EQUALS);
+    for (const auto& sid : groupnames) {
+      genDomainGroupFromSid(domainName, sid, results);
+    }
+
   } else {
     processGroups(domainName, results, true);
     processDomainGlobalGroups(domainName, results);

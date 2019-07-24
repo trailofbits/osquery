@@ -161,47 +161,6 @@ std::string getSidFromAccountName(const std::string& name) {
   return "";
 }
 
-/// Convert string representation of a SID ("S-1-5-18") into the username.
-/// If fails to look up SID, returns an empty string.
-std::string getUsernameFromSid(const std::string& sidString) {
-  if (sidString.empty()) {
-    return "";
-  }
-
-  PSID sid;
-  auto ret = ConvertStringSidToSidA(sidString.c_str(), &sid);
-  if (ret == 0) {
-    VLOG(1) << "Convert SID to string failed with " << GetLastError()
-            << " for sid: " << sidString;
-    return "";
-  }
-
-  auto eUse = SidTypeUnknown;
-  unsigned long unameSize = 0;
-  unsigned long domNameSize = 1;
-  // LookupAccountSid first gets the size of the username buff required.
-  LookupAccountSidW(
-      nullptr, sid, nullptr, &unameSize, nullptr, &domNameSize, &eUse);
-
-  std::vector<wchar_t> uname(unameSize);
-  std::vector<wchar_t> domName(domNameSize);
-  ret = LookupAccountSidW(nullptr,
-                          sid,
-                          uname.data(),
-                          &unameSize,
-                          domName.data(),
-                          &domNameSize,
-                          &eUse);
-
-  if (ret == 0) {
-    VLOG(1) << "LookupAccountSid failed with " << GetLastError()
-            << " for sid: " << sidString;
-    return "";
-  }
-
-  return wstringToString(uname.data());
-}
-
 bool isValidSid(const std::string& maybeSid) {
   return getUsernameFromSid(maybeSid).length() != 0;
 }

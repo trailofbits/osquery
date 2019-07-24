@@ -258,6 +258,8 @@ QueryData genDomainUserGroups(QueryContext& context) {
         processDomainUserGlobalGroups(domain, id, username, results);
       }
     }
+    /* } else if (context.constraints["user_sid"].exists(EQUALS)) { */
+
   } else if (context.constraints["groupname"].exists(EQUALS)) {
     auto groupnames = context.constraints["groupname"].getAll(EQUALS);
     for (const auto& groupname : groupnames) {
@@ -281,7 +283,6 @@ QueryData genDomainUserGroups(QueryContext& context) {
       processDomainUserGroups(domain, user_row["uuid"], user_row["username"], results, getDomainUserGroupRow);
       processDomainUserGlobalGroups(domain, user_row["uuid"], user_row["username"], results);
     }
-
   }
 
   return results;

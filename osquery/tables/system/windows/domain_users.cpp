@@ -16,6 +16,7 @@
 #include <osquery/logger.h>
 
 #include <osquery/system.h>
+#include <osquery/process/windows/process_ops.h>
 
 #include "osquery/tables/system/windows/users.h"
 #include <osquery/utils/conversions/windows/strings.h>
@@ -41,12 +42,6 @@ Row getDomainUserRow(
   return r;
 }
 
-void genDomainUserFromSid(const std::wstring& domainName,
-                          const std::string& sidString,
-                          QueryData& results) {
-  // TODO: implement. Convert sidString to PSID, then
-  // use LookupAccountSidW
-}
 
 void genDomainUser(
     const std::wstring& servername,
@@ -72,6 +67,13 @@ void genDomainUser(
   }
 }
 
+void genDomainUserFromSid(const std::wstring& domainName,
+                          const std::string& sidString,
+                          QueryData& results) {
+  auto username = getUsernameFromSid(sidString);
+  genDomainUser(domainName, username, results);
+}
+
 QueryData genDomainUsers(QueryContext& context) {
   QueryData results;
   std::set<std::string> processedSids;
@@ -82,12 +84,14 @@ QueryData genDomainUsers(QueryContext& context) {
   // TODO implement opt for uuid=? What if both username and uuid
   // are given?
   if (context.constraints["username"].exists(EQUALS)) {
+    std::cout << " given username constraint!\n";
     auto usernames = context.constraints["username"].getAll(EQUALS);
     for (const auto& username : usernames) {
       /* std::cout << username << "\n"; */
       genDomainUser(domainName, username, results);
     }
   } else if (context.constraints["uuid"].exists(EQUALS)) {
+    std::cout << " given uuid constraint!\n";
     auto uuids = context.constraints["uuid"].getAll(EQUALS);
     for (const auto& uuid : uuids) {
       genDomainUserFromSid(domainName, uuid, results);
