@@ -278,8 +278,8 @@ QueryData genDomainUserGroups(QueryContext& context) {
     }
 
     for (auto user_row : sql.rows()) {
-      processDomainUserGroups(domain, user_row["uid"], user_row["username"], results, getDomainUserGroupRow);
-      processDomainUserGlobalGroups(domain, user_row["uid"], user_row["username"], results);
+      processDomainUserGroups(domain, user_row["uuid"], user_row["username"], results, getDomainUserGroupRow);
+      processDomainUserGlobalGroups(domain, user_row["uuid"], user_row["username"], results);
     }
 
   }

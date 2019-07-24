@@ -18,6 +18,7 @@
 
 #include "osquery/tables/system/windows/registry.h"
 #include "osquery/tables/system/windows/user_groups.h"
+#include "osquery/tables/system/windows/domain_user_groups.h"
 #include <osquery/utils/conversions/tryto.h>
 #include <osquery/utils/conversions/windows/strings.h>
 #include <osquery/process/process.h>
@@ -39,7 +40,13 @@ Row getDomainUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::
 
   Row r;
   r["user_sid"] = uid;
-  r["group_sid"] = INTEGER(gid);
+
+  std::string sidString;
+  auto ret = accountNameToSidString(wstringToString(groupname), domainName, sidString);
+  if (ret.ok()) {
+    r["group_sid"] = sidString;
+  }
+
   if (!domainName.empty()) {
     r["domain"] = wstringToString(domainName.c_str());
   }
