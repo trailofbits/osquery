@@ -170,6 +170,8 @@ function(generateOsqueryTablesSystemSystemtable)
       windows/domain_user_groups.cpp
       windows/domain_groups.cpp
       windows/groups.cpp
+      windows/group_members.cpp
+      windows/group_flat_members.cpp
       windows/ie_extensions.cpp
       windows/intel_me.cpp
       windows/kernel_info.cpp

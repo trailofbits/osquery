@@ -231,6 +231,8 @@ function(generateNativeTables)
     "windows/domain_groups.table:windows"
     "windows/domain_user_groups.table:windows"
     "windows/domain_users.table:windows"
+    "windows/group_members.table:windows"
+    "windows/group_flat_members.table:windows"
     "windows/logon_sessions.table:windows"
     "windows/ntfs_acl_permissions.table:windows"
     "windows/scheduled_tasks.table:windows"
