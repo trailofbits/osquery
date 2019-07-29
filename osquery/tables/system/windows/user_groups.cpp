@@ -33,28 +33,6 @@ uint32_t getGidFromSid(PSID sid);
 
 namespace tables {
 
-Row getDomainUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName,
-                    const std::string& username) {
-  auto sid = getSidFromUsername(groupname);
-  auto gid = getGidFromSid(static_cast<PSID>(sid.get()));
-
-  Row r;
-  r["user_sid"] = uid;
-
-  std::string sidString;
-  auto ret = accountNameToSidString(wstringToString(groupname), domainName, sidString);
-  if (ret.ok()) {
-    r["group_sid"] = sidString;
-  }
-
-  if (!domainName.empty()) {
-    r["domain"] = wstringToString(domainName.c_str());
-  }
-  r["username"] = username;
-  r["groupname"] = wstringToString(groupname);
-  return r;
-}
-
 Row getUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName,
                     const std::string& username) {
   auto sid = getSidFromUsername(groupname);

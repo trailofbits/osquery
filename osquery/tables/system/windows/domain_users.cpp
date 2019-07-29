@@ -71,7 +71,9 @@ void genDomainUserFromSid(const std::wstring& domainName,
                           const std::string& sidString,
                           QueryData& results) {
   auto username = getUsernameFromSid(sidString);
-  genDomainUser(domainName, username, results);
+  if (!username.empty()) {
+    genDomainUser(domainName, username, results);
+  }
 }
 
 QueryData genDomainUsers(QueryContext& context) {

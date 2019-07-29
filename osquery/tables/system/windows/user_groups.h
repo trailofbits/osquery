@@ -14,8 +14,6 @@
 namespace osquery {
 namespace tables {
 
-Row getDomainUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstring& domainName, const std::string& username);
-
 using UserLocalGroupCallback = std::function<Row(const std::string&, LPCWSTR, const std::wstring&, const std::string&)>;
 
 void processDomainUserGroups(const std::wstring& domainName,

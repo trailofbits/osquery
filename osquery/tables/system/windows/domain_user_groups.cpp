@@ -34,6 +34,31 @@ std::string psidToString(PSID sid);
 
 namespace tables {
 
+Row getDomainUserGroupRow(const std::string& uid,
+                          LPCWSTR groupname,
+                          const std::wstring& domainName,
+                          const std::string& username) {
+  auto sid = getSidFromUsername(groupname);
+  auto gid = getGidFromSid(static_cast<PSID>(sid.get()));
+
+  Row r;
+  r["user_sid"] = uid;
+
+  std::string sidString;
+  auto ret =
+      accountNameToSidString(wstringToString(groupname), domainName, sidString);
+  if (ret.ok()) {
+    r["group_sid"] = sidString;
+  }
+
+  if (!domainName.empty()) {
+    r["domain"] = wstringToString(domainName.c_str());
+  }
+  r["username"] = username;
+  r["groupname"] = wstringToString(groupname);
+  return r;
+}
+
 Status accountNameToSidString(const std::string& accountName, const std::wstring& domain, std::string& sidString) {
   auto sidSmartPtr = getSidFromUsername(stringToWstring(accountName).c_str(), domain.c_str());
   if (sidSmartPtr == nullptr) {
@@ -248,6 +273,7 @@ QueryData genDomainUserGroups(QueryContext& context) {
 
   auto domain = getWinDomainName();
 
+  // get rid of this case/col
   if (context.constraints["username"].exists(EQUALS)) {
     auto usernames = context.constraints["username"].getAll(EQUALS);
     for (const auto& username : usernames) {
@@ -258,7 +284,16 @@ QueryData genDomainUserGroups(QueryContext& context) {
         processDomainUserGlobalGroups(domain, id, username, results);
       }
     }
-    /* } else if (context.constraints["user_sid"].exists(EQUALS)) { */
+  } else if (context.constraints["user_sid"].exists(EQUALS)) {
+    auto sids = context.constraints["user_sid"].getAll(EQUALS);
+    for (const auto& sid : sids) {
+      auto username = getUsernameFromSid(sid);
+      if (!username.empty()) {
+        processDomainUserGroups(
+            domain, sid, username, results, getDomainUserGroupRow);
+        processDomainUserGlobalGroups(domain, sid, username, results);
+      }
+    }
 
   } else if (context.constraints["groupname"].exists(EQUALS)) {
     auto groupnames = context.constraints["groupname"].getAll(EQUALS);
@@ -268,7 +303,6 @@ QueryData genDomainUserGroups(QueryContext& context) {
 
   } else {
     std::stringstream queryStream;
-    /* queryStream << "SELECT uid, username FROM domain_users WHERE username NOT IN ('SYSTEM', " */
     queryStream << "SELECT uuid, username FROM domain_users WHERE username NOT IN ('SYSTEM', "
                 << "'LOCAL SERVICE', 'NETWORK SERVICE') AND domain = \""
                 << wstringToString(domain.c_str()) << "\"";
