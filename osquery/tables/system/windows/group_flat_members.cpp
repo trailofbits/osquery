@@ -211,33 +211,33 @@ Status genFlatMembersOfLocalGroup(
     std::cout << "checking if in visited " << memberSid << "\n";
     auto visited = visited_groups.count(memberSid) == 1;
 
-#define XX(thing)                                                              \
-  case thing:                                                                  \
-    std::cout << #thing << "\n";                                               \
-    break
+/* #define XX(thing)                                                              \ */
+/*   case thing:                                                                  \ */
+/*     std::cout << #thing << "\n";                                               \ */
+/*     break */
 
-    switch (usage) {
-      XX(SidTypeUser);
-      XX(SidTypeGroup);
-      XX(SidTypeDomain);
-      XX(SidTypeAlias);
-      XX(SidTypeWellKnownGroup);
-      XX(SidTypeDeletedAccount);
-      XX(SidTypeInvalid);
-      XX(SidTypeUnknown);
-      XX(SidTypeComputer);
-      XX(SidTypeLabel);
-      XX(SidTypeLogonSession);
+/*     switch (usage) { */
+/*       XX(SidTypeUser); */
+/*       XX(SidTypeGroup); */
+/*       XX(SidTypeDomain); */
+/*       XX(SidTypeAlias); */
+/*       XX(SidTypeWellKnownGroup); */
+/*       XX(SidTypeDeletedAccount); */
+/*       XX(SidTypeInvalid); */
+/*       XX(SidTypeUnknown); */
+/*       XX(SidTypeComputer); */
+/*       XX(SidTypeLabel); */
+/*       XX(SidTypeLogonSession); */
 
-    default:
-      break;
-    }
+/*     default: */
+/*       break; */
+/*     } */
 
-    std::cout << "is_group_type " << is_group_type << "\n";
-    std::cout << "usage " << usage << "\n";
-    std::cout << "!visited " << !visited << "\n";
-    std::cout << "member.lgrmi1_name " << wstringToString(member.lgrmi1_name)
-              << "\n";
+/*     std::cout << "is_group_type " << is_group_type << "\n"; */
+/*     std::cout << "usage " << usage << "\n"; */
+/*     std::cout << "!visited " << !visited << "\n"; */
+/*     std::cout << "member.lgrmi1_name " << wstringToString(member.lgrmi1_name) */
+/*               << "\n"; */
 
     if (is_group_type) {
       if (!visited) {
@@ -410,10 +410,6 @@ QueryData genGroupFlatMembers(QueryContext& context) {
       // error out
       return results;
   }
-
-  // FIXME! need to handle cycles in the group graph (currently doesn't)
-  // need to keep track of the groups we've already visited and check before
-  // we recurse
 
   std::unordered_set<std::string> visited_groups;
 
