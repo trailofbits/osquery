@@ -43,7 +43,7 @@ Status getGroupRow(const std::wstring& domainNameW,
     fqGroupName = domainNameW + L"\\" + fqGroupName;
   }
   std::wcout << "fqGroupName: " << fqGroupName << "\n";
-  std::wcout << "groupName: " << groupName << "\n";
+  /* std::wcout << "groupName: " << groupName << "\n"; */
 
   auto sidSmartPtr = getSidFromUsername(groupName, domainNameW.c_str());
 

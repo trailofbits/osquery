@@ -48,9 +48,9 @@ Status genFlatDomainUserGlobalGroupRow(
   r["membername"] = wstringToString(member.grui0_name);
   r["parent"] = parent;
 
-  std::cout << "adding row for : " <<  wstringToString(member.grui0_name) << "\n";
+  /* std::cout << "adding row for : " <<  wstringToString(member.grui0_name) << "\n"; */
 
-  std::cout << "setting original_groupname to " << original_groupname << "\n";
+  /* std::cout << "setting original_groupname to " << original_groupname << "\n"; */
   r["groupname"] = original_groupname;
   r["path"] = path;
   r["domain"] = wstringToString(domain.c_str());
@@ -183,7 +183,7 @@ Status genFlatMembersOfLocalGroup(
 
   // mark this group as visited
   visited_groups.insert(groupSidString);
-  std::cout << "added to visited " << groupSidString;
+  /* std::cout << "added to visited " << groupSidString; */
 
   std::cout << "numMembersRead " << numMembersRead << "\n";
   std::cout << "numMembersTotal " << numMembersTotal << "\n";
@@ -199,7 +199,7 @@ Status genFlatMembersOfLocalGroup(
                          (usage == SidTypeWellKnownGroup) ||
                          (usage == SidTypeAlias);
 
-    std::cout << "member name:" << wstringToString(member.lgrmi1_name) << "\n";
+    /* std::cout << "member name:" << wstringToString(member.lgrmi1_name) << "\n"; */
 
     std::string memberSid;
     auto sidSmartPtr2 = getSidFromUsername(member.lgrmi1_name, domain.c_str());
@@ -208,7 +208,7 @@ Status genFlatMembersOfLocalGroup(
       memberSid = psidToString(sidPtr);
     }
 
-    std::cout << "checking if in visited " << memberSid << "\n";
+    /* std::cout << "checking if in visited " << memberSid << "\n"; */
     auto visited = visited_groups.count(memberSid) == 1;
 
 /* #define XX(thing)                                                              \ */
