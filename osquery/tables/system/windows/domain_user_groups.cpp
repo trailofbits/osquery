@@ -88,6 +88,8 @@ Status genDomainUserGlobalGroupRow(
   r["groupname"] = groupname;
   r["domain"] = wstringToString(domain.c_str());
 
+  std::cout << "adding row: " << r["username"] << "\n";
+
   auto sidSmartPtr = getSidFromUsername(stringToWstring(groupname).c_str(), domain.c_str());
   if (sidSmartPtr == nullptr) {
     return Status::failure("Failed to find a SID for group: " + groupname);
@@ -110,6 +112,8 @@ Status genMembersOfGlobalGroup(
   DWORD numMembersTotal = 0;
   DWORD_PTR resumeHandle = 0;
 
+  std::cout << "genMembersOfGlobalGroup " << groupname << "\n";
+
   auto ret = NetGroupGetUsers(
               domain.c_str(),
               stringToWstring(groupname).c_str(),
@@ -126,6 +130,9 @@ Status genMembersOfGlobalGroup(
   }
 
   auto groupMembers = LPGROUP_USERS_INFO_0(infoBuf);
+
+  std::cout << "numMembersTotal " << numMembersTotal << "\n";
+  std::cout << "numMembersRead " << numMembersRead << "\n";
 
   for (DWORD i = 0; i < numMembersRead; i++) {
     auto& member = groupMembers[i];
@@ -152,6 +159,8 @@ Status genDomainUserLocalGroupRow(
   r["username"] = wstringToString(member.lgrmi1_name);
   r["groupname"] = groupname;
   r["domain"] = wstringToString(domain.c_str());
+
+  std::cout << "adding row: " << r["username"] << "\n";
 
   auto sidSmartPtr = getSidFromUsername(stringToWstring(groupname).c_str(), domain.c_str());
   if (sidSmartPtr == nullptr) {
@@ -184,6 +193,8 @@ Status genMembersOfLocalGroup(
   DWORD numMembersTotal = 0;
   DWORD_PTR resumeHandle = 0;
 
+  std::cout << "genMembersOfLocalGroup: " << groupname << "\n";
+
   auto ret = NetLocalGroupGetMembers(
               domain.c_str(),
               stringToWstring(groupname).c_str(),
@@ -200,6 +211,9 @@ Status genMembersOfLocalGroup(
   }
 
   auto groupMembers = LPLOCALGROUP_MEMBERS_INFO_1(infoBuf);
+
+  std::cout << "numMembersTotal " << numMembersTotal << "\n";
+  std::cout << "numMembersRead " << numMembersRead << "\n";
 
   for (DWORD i = 0; i < numMembersRead; i++) {
     auto& member = groupMembers[i];
@@ -241,6 +255,8 @@ void processDomainUserGlobalGroups(const std::wstring& domainName,
     return;
   }
 
+  std::cout << "processDomainUserGlobalGroups " << user << "\n";
+
   /* std::wcout << "serverName " << serverName << "\n"; */
   /* std::cout << "user " << user << "\n"; */
 
@@ -256,6 +272,9 @@ void processDomainUserGlobalGroups(const std::wstring& domainName,
             << ret;
     return;
   }
+
+  std::cout << "numGroups " << numGroups << "\n";
+  std::cout << "totalUserGroups " << totalUserGroups << "\n";
 
   for (DWORD i = 0; i < numGroups; i++) {
     /* std::wcout << "  group name! " << ginfo[i].grui0_name << "\n"; */
