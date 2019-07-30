@@ -50,6 +50,9 @@ Status genGroupMemberRow(
     case SidTypeGroup:
         r["member_type"] = "Group";
         break;
+    case SidTypeAlias:
+        r["member_type"] = "Domain local group";
+        break;
     case SidTypeWellKnownGroup:
         r["member_type"] = "Well Known Group";
         break;
