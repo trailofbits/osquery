@@ -4,12 +4,4 @@ schema([
     Column("uid", BIGINT, "User ID", index=True),
     Column("gid", BIGINT, "Group ID", index=True)
 ])
-extended_schema(WINDOWS, [
-    Column("member_sid", TEXT, "user sid"),
-    Column("group_sid", TEXT, "group sid"),
-    Column("membername", TEXT, ""),
-    Column("groupname", TEXT, ""),
-    Column("domain", TEXT, ""),
-    Column("member_type", TEXT, ""),
-])
 implementation("user_groups@genUserGroups")
