@@ -27,14 +27,12 @@ Status genMembersOfLocalGroup(
     LocalGroupMemberCallback callback
     );
 
-void genFlatMembersOfGroup(
-    const std::wstring& domain,
-    const std::string& groupname,
-    const std::string& original_groupname,
-    std::string& path,
-    QueryData& results,
-    int depth
-    );
-
+void genFlatMembersOfGroup(const std::wstring& domain,
+                           const std::string& groupname,
+                           const std::string& original_groupname,
+                           std::string& path,
+                           QueryData& results,
+                           std::unordered_set<std::string>& visited_groups,
+                           int depth);
 }
 }

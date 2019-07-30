@@ -33,12 +33,11 @@ namespace tables {
 
 Status genFlatDomainUserGlobalGroupRow(
     const std::wstring& domain,
-    const std::string& groupname,
+    const std::string& original_groupname,
+    const std::string& originalGroupSidString,
     std::string& path,
     GROUP_USERS_INFO_0& member,
-    Row& r
-    ) {
-
+    Row& r) {
   std::string sidString;
   auto ret = accountNameToSidString(wstringToString(member.grui0_name), domain, sidString);
   if (ret.ok()) {
@@ -49,24 +48,26 @@ Status genFlatDomainUserGlobalGroupRow(
 
   std::cout << "adding row for : " <<  wstringToString(member.grui0_name) << "\n";
 
-
-  std::cout << "setting groupname to " << groupname << "\n";
-  r["groupname"] = groupname;
+  std::cout << "setting original_groupname to " << original_groupname << "\n";
+  r["groupname"] = original_groupname;
   r["path"] = path;
   r["domain"] = wstringToString(domain.c_str());
 
-  auto sidSmartPtr = getSidFromUsername(stringToWstring(groupname).c_str(), domain.c_str());
-  if (sidSmartPtr == nullptr) {
-    return Status::failure("Failed to find a SID for group: " + groupname);
-  } else {
-    auto sidPtr = static_cast<PSID>(sidSmartPtr.get());
-    r["group_sid"] = psidToString(sidPtr);
-  }
+  r["group_sid"] = originalGroupSidString;
+
+  /* auto sidSmartPtr =
+   * getSidFromUsername(stringToWstring(original_groupname).c_str(),
+   * domain.c_str()); */
+  /* if (sidSmartPtr == nullptr) { */
+  /*   return Status::failure("Failed to find a SID for group: " +
+   * original_groupname); */
+  /* } else { */
+  /*   auto sidPtr = static_cast<PSID>(sidSmartPtr.get()); */
+  /*   r["group_sid"] = psidToString(sidPtr); */
+  /* } */
 
   return Status::success();
 }
-
-
 
 Status genFlatDomainUserLocalGroupRow(
     const std::wstring& domain,
@@ -98,10 +99,10 @@ Status genFlatMembersOfLocalGroup(
     const std::string& original,
     std::string& path,
     QueryData& results,
+    std::unordered_set<std::string>& visited_groups,
     int depth
-    
-    ) {
 
+) {
   const DWORD infoLevel = 1; // Get SID and Name
   LPBYTE infoBuf = nullptr;
   DWORD numMembersRead = 0;
@@ -125,29 +126,60 @@ Status genFlatMembersOfLocalGroup(
   if (ret != NERR_Success || infoBuf == nullptr) {
     std::cout << "fail to look up group\n";
 
-    if (depth == 0) {
-
+    if (depth == 0 && domain.empty()) {
       auto domain = getWinDomainName();
       std::cout << "trying harder with domain\n";
 
-
-      auto newret = genFlatMembersOfLocalGroup(domain, groupname, original, path, results, depth+1);
+      auto newret = genFlatMembersOfLocalGroup(domain,
+                                               groupname,
+                                               original,
+                                               path,
+                                               results,
+                                               visited_groups,
+                                               depth + 1);
 
       return newret;
-
     }
 
     return Status::failure("Fail to look up local group");
   }
 
-  // TODO compute the group sid here rather than calculating it 
   std::string originalGroupSidString;
 
-  auto sidSmartPtr = getSidFromUsername(stringToWstring(original).c_str(), domain.c_str());
+  // Don't use domain because original group is local?
+  /* auto sidSmartPtr = getSidFromUsername(stringToWstring(original).c_str(),
+   * domain.c_str()); */
+  auto sidSmartPtr =
+      getSidFromUsername(stringToWstring(original).c_str(), nullptr);
   if (sidSmartPtr != nullptr) {
     auto sidPtr = static_cast<PSID>(sidSmartPtr.get());
     originalGroupSidString = psidToString(sidPtr);
   }
+  /* } else { */
+  /* // we couldn't get a sid? */
+  /* // that's pretty weird, and pretty bad because we use sids to keep track */
+  /* // of cycles in the graph. */
+  /* // we should definitely have a sid here, it's */
+  /* return Status::failure(1, "failed to get sid for original group"); */
+  /* } */
+
+  std::string groupSidString;
+  auto sidSmartPtr2 =
+      getSidFromUsername(stringToWstring(groupname).c_str(), domain.c_str());
+  if (sidSmartPtr2 != nullptr) {
+    auto sidPtr = static_cast<PSID>(sidSmartPtr2.get());
+    groupSidString = psidToString(sidPtr);
+  } else {
+    // we couldn't get a sid?
+    // that's pretty weird, and pretty bad because we use sids to keep track
+    // of cycles in the graph.
+    // we should definitely have a sid here, it's
+    return Status::failure(1, "failed to get sid for group");
+  }
+
+  // mark this group as visited
+  visited_groups.insert(groupSidString);
+  std::cout << "added to visited " << groupSidString;
 
   std::cout << "numMembersRead " << numMembersRead << "\n";
   std::cout << "numMembersTotal " << numMembersTotal << "\n";
@@ -158,12 +190,64 @@ Status genFlatMembersOfLocalGroup(
     auto& member = groupMembers[i];
     auto usage = member.lgrmi1_sidusage;
 
-    if (usage == SidTypeGroup || usage == SidTypeWellKnownGroup) {
+    // Non-builtin domain local groups are SidTypeAlias
+    auto is_group_type = (usage == SidTypeGroup) ||
+                         (usage == SidTypeWellKnownGroup) ||
+                         (usage == SidTypeAlias);
 
-      auto gname = member.lgrmi1_name;
+    std::cout << "member name:" << wstringToString(member.lgrmi1_name) << "\n";
 
-      std::cout << "recursing on " << wstringToString(gname) << "\n";
-      genFlatMembersOfGroup(domain, wstringToString(gname), original, path + "/" + wstringToString(gname),results, 0);
+    std::string memberSid;
+    auto sidSmartPtr2 = getSidFromUsername(member.lgrmi1_name, domain.c_str());
+    if (sidSmartPtr2 != nullptr) {
+      auto sidPtr = static_cast<PSID>(sidSmartPtr2.get());
+      memberSid = psidToString(sidPtr);
+    }
+
+    std::cout << "checking if in visited " << memberSid << "\n";
+    auto visited = visited_groups.count(memberSid) == 1;
+
+#define XX(thing)                                                              \
+  case thing:                                                                  \
+    std::cout << #thing << "\n";                                               \
+    break
+
+    switch (usage) {
+      XX(SidTypeUser);
+      XX(SidTypeGroup);
+      XX(SidTypeDomain);
+      XX(SidTypeAlias);
+      XX(SidTypeWellKnownGroup);
+      XX(SidTypeDeletedAccount);
+      XX(SidTypeInvalid);
+      XX(SidTypeUnknown);
+      XX(SidTypeComputer);
+      XX(SidTypeLabel);
+      XX(SidTypeLogonSession);
+
+    default:
+      break;
+    }
+
+    std::cout << "is_group_type " << is_group_type << "\n";
+    std::cout << "usage " << usage << "\n";
+    std::cout << "!visited " << !visited << "\n";
+    std::cout << "member.lgrmi1_name " << wstringToString(member.lgrmi1_name)
+              << "\n";
+
+    if (is_group_type) {
+      if (!visited) {
+        auto gname = member.lgrmi1_name;
+
+        std::cout << "recursing on " << wstringToString(gname) << "\n";
+        genFlatMembersOfGroup(domain,
+                              wstringToString(gname),
+                              original,
+                              path + "/" + wstringToString(gname),
+                              results,
+                              visited_groups,
+                              0);
+      }
 
     } else {
       Row r;
@@ -172,9 +256,7 @@ Status genFlatMembersOfLocalGroup(
       if (gotRow.ok()) {
         results.push_back(r);
       }
-
     }
-
   }
 
 
@@ -189,10 +271,10 @@ Status genFlatMembersOfGlobalGroup(
     const std::string& original,
     std::string& path,
     QueryData& results,
+    std::unordered_set<std::string>& visited_groups,
     int depth
-    
-    ) {
 
+) {
   const DWORD infoLevel = 0; // Can only get name
   LPBYTE infoBuf = nullptr;
   DWORD numMembersRead = 0;
@@ -217,19 +299,53 @@ Status genFlatMembersOfGlobalGroup(
 
     std::cout << "fail to look up global group\n";
 
-    if (depth == 0) {
-
+    if (depth == 0 && domain.empty()) {
       auto domain = getWinDomainName();
       std::cout << "trying harder with domain\n";
 
-      auto newret = genFlatMembersOfGlobalGroup(domain, groupname, original, path, results, depth+1);
+      auto newret = genFlatMembersOfGlobalGroup(domain,
+                                                groupname,
+                                                original,
+                                                path,
+                                                results,
+                                                visited_groups,
+                                                depth + 1);
 
       return newret;
-
     }
 
     return Status::failure("Fail to look up global group");
   }
+
+  std::string originalGroupSidString;
+
+  /* auto sidSmartPtr = getSidFromUsername(stringToWstring(original).c_str(),
+   * domain.c_str()); */
+  auto sidSmartPtr2 =
+      getSidFromUsername(stringToWstring(original).c_str(), nullptr);
+  if (sidSmartPtr2 != nullptr) {
+    auto sidPtr = static_cast<PSID>(sidSmartPtr2.get());
+    originalGroupSidString = psidToString(sidPtr);
+  }
+
+  std::string groupSidString;
+
+  auto sidSmartPtr =
+      getSidFromUsername(stringToWstring(groupname).c_str(), domain.c_str());
+  if (sidSmartPtr != nullptr) {
+    auto sidPtr = static_cast<PSID>(sidSmartPtr.get());
+    groupSidString = psidToString(sidPtr);
+  } else {
+    // we couldn't get a sid?
+    // that's pretty weird, and pretty bad because we use sids to keep track
+    // of cycles in the graph.
+    // we should definitely have a sid here, it's
+    return Status::failure(1, "failed to get sid for group");
+  }
+
+  // mark this group as visited
+  visited_groups.insert(groupSidString);
+  std::cout << "added to visited " << groupSidString;
 
   auto groupMembers = LPGROUP_USERS_INFO_0(infoBuf);
 
@@ -237,8 +353,8 @@ Status genFlatMembersOfGlobalGroup(
     auto& member = groupMembers[i];
 
       Row r;
-      // should be a user
-      auto gotRow = genFlatDomainUserGlobalGroupRow(domain, original, path, member,   r);
+      auto gotRow = genFlatDomainUserGlobalGroupRow(
+          domain, original, originalGroupSidString, path, member, r);
       if (gotRow.ok()) {
         std::cout << "pushing back!\n";
         results.push_back(r);
@@ -253,23 +369,35 @@ Status genFlatMembersOfGlobalGroup(
   return Status::success();
 }
 
+void genFlatMembersOfGroup(const std::wstring& domain,
+                           const std::string& groupname,
+                           const std::string& original_groupname,
+                           std::string& path,
+                           QueryData& results,
+                           std::unordered_set<std::string>& visited_groups,
+                           int depth
 
-void genFlatMembersOfGroup(
-    const std::wstring& domain,
-    const std::string& groupname,
-    const std::string& original_groupname,
-    std::string& path,
-    QueryData& results,
-    int depth
-    
-    ) {
-  auto ret = genFlatMembersOfLocalGroup(domain, groupname, original_groupname, path, results, depth);
+) {
+  auto ret = genFlatMembersOfLocalGroup(domain,
+                                        groupname,
+                                        original_groupname,
+                                        path,
+                                        results,
+                                        visited_groups,
+                                        depth);
+  /* auto ret = genFlatMembersOfLocalGroup(domain, groupname,
+   * original_groupname, path, results, depth); */
   if (ret.ok()) {
     return;
   }
-  genFlatMembersOfGlobalGroup(domain, groupname, original_groupname, path, results, depth);
+  genFlatMembersOfGlobalGroup(domain,
+                              groupname,
+                              original_groupname,
+                              path,
+                              results,
+                              visited_groups,
+                              depth);
 }
-
 
 QueryData genGroupFlatMembers(QueryContext& context) {
   QueryData results;
@@ -283,10 +411,15 @@ QueryData genGroupFlatMembers(QueryContext& context) {
   // need to keep track of the groups we've already visited and check before
   // we recurse
 
+  std::unordered_set<std::string> visited_groups;
+
   auto groupnames = context.constraints["groupname"].getAll(EQUALS);
   for (auto& groupname : groupnames) {
     auto path = groupname;
-    genFlatMembersOfGroup(std::wstring(), groupname, groupname, path, results, 0);
+    genFlatMembersOfGroup(
+        std::wstring(), groupname, groupname, path, results, visited_groups, 0);
+    /* genFlatMembersOfGroup(std::wstring(), groupname, groupname, path,
+     * results, 0); */
   }
 
   return results;
