@@ -9,5 +9,6 @@ extended_schema(WINDOWS, [
     Column("membername", TEXT, ""),
     Column("path", TEXT, ""),
     Column("domain", TEXT, ""),
+    Column("parent", TEXT, ""),
 ])
 implementation("group_flat_members@genGroupFlatMembers")

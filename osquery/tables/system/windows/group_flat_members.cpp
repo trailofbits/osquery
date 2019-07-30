@@ -35,6 +35,7 @@ Status genFlatDomainUserGlobalGroupRow(
     const std::wstring& domain,
     const std::string& original_groupname,
     const std::string& originalGroupSidString,
+    const std::string& parent,
     std::string& path,
     GROUP_USERS_INFO_0& member,
     Row& r) {
@@ -45,6 +46,7 @@ Status genFlatDomainUserGlobalGroupRow(
   }
 
   r["membername"] = wstringToString(member.grui0_name);
+  r["parent"] = parent;
 
   std::cout << "adding row for : " <<  wstringToString(member.grui0_name) << "\n";
 
@@ -73,6 +75,7 @@ Status genFlatDomainUserLocalGroupRow(
     const std::wstring& domain,
     const std::string& groupname,
     const std::string& groupSid,
+    const std::string& parent,
     const std::string& path,
     LOCALGROUP_MEMBERS_INFO_1& member,
     Row& r
@@ -80,6 +83,7 @@ Status genFlatDomainUserLocalGroupRow(
 
   r["member_sid"] = psidToString(member.lgrmi1_sid);
   r["membername"] = wstringToString(member.lgrmi1_name);
+  r["parent"] = parent;
 
   std::cout << "adding row for : " <<  wstringToString(member.lgrmi1_name) << "\n";
 
@@ -252,7 +256,7 @@ Status genFlatMembersOfLocalGroup(
     } else {
       Row r;
       // should be a user
-      auto gotRow = genFlatDomainUserLocalGroupRow(domain, original, originalGroupSidString, path, member, r);
+      auto gotRow = genFlatDomainUserLocalGroupRow(domain, original, originalGroupSidString, groupname, path, member, r);
       if (gotRow.ok()) {
         results.push_back(r);
       }
@@ -354,7 +358,7 @@ Status genFlatMembersOfGlobalGroup(
 
       Row r;
       auto gotRow = genFlatDomainUserGlobalGroupRow(
-          domain, original, originalGroupSidString, path, member, r);
+          domain, original, originalGroupSidString, groupname, path, member, r);
       if (gotRow.ok()) {
         std::cout << "pushing back!\n";
         results.push_back(r);
