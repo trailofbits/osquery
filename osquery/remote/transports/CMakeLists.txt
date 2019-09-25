@@ -65,8 +65,9 @@ function(generateOsqueryRemoteTransportsRemotetransportstlstestsTest)
     plugins_killswitch_killswitchfilesystem
     tests_helper
     thirdparty_googletest
-    osquery_tools_tests_testfiles
   )
+
+  add_dependencies(osquery_remote_transports_remotetransportstlstests-test osquery_tools_tests_testfiles)
 endfunction()
 
 osqueryRemoteTransportsMain()

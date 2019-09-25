@@ -24,9 +24,10 @@ function(generateOsqueryKillswitchTestsTest)
     plugins_config_tlsconfig
     plugins_database_ephemeral
     tests_helper
-    osquery_tools_tests_conffiles
     thirdparty_googletest
   )
+
+  add_dependencies(osquery_killswitch_tests-test osquery_tools_tests_conffiles)
 endfunction()
 
 osqueryKillswitchTestsMain()

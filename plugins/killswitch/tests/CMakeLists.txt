@@ -25,9 +25,10 @@ function(generatePluginsKillswitchTestsKillswitchfilesystemplugintestsTest)
     plugins_database_ephemeral
     plugins_killswitch_killswitchfilesystem
     tests_helper
-    osquery_tools_tests_conffiles
     thirdparty_googletest
   )
+
+  add_dependencies(plugins_killswitch_killswitchfilesystemplugintests-test osquery_tools_tests_conffiles)
 endfunction()
 
 pluginsKillswitchTestsMain()
