@@ -24,6 +24,10 @@ The root folder is assumed to be `/home/<user>`
 # Install the prerequisites
 sudo apt install --no-install-recommends git python python3 bison flex make
 
+# Optional: install python tests prerequisites
+sudo apt install --no-install-recommends python-pip python-setuptools python-psutil python-pexpect python-six
+pip install timeout-decorator
+
 # Download and install the osquery toolchain
 wget https://github.com/osquery/osquery-toolchain/releases/download/1.0.0/osquery-toolchain-1.0.0.tar.xz
 sudo tar xvf osquery-toolchain-1.0.0.tar.xz -C /usr/local
@@ -55,6 +59,9 @@ Please ensure [Homebrew](https://brew.sh/) has been installed, first. Then do th
 # Install prerequisites
 xcode-select --install
 brew install git cmake python@2 python
+
+# Optional: install python tests prerequisites
+pip install setuptools pexpect psutil timeout_decorator six
 ```
 
 **Step 2: Download and build**
@@ -89,6 +96,14 @@ Note: It may be easier to install these prerequisites using [Chocolatey](https:/
 - [Python 3](https://www.python.org/downloads/windows/), specifically the 64-bit version.
 - [Wix Toolset](https://wixtoolset.org/releases/)
 - [Strawberry Perl](http://strawberryperl.com/) and [NASM](https://nasm.us) for the OpenSSL formula. It is recommended to install them to their default destination folders.
+
+**Optional: Install python tests prerequisites**
+Python 2 is assumed to be installed in `C:\Python27`
+
+```PowerShell
+# Using a PowerShell console
+C:\Python27\python.exe -m pip install setuptools psutil timeout_decorator six
+```
 
 **Step 2: Download and build**
 
