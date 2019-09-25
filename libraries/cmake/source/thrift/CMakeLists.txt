@@ -109,6 +109,7 @@ function(thriftMain)
     "${library_root}/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/config"
   )
+
 endfunction()
 
 thriftMain()
