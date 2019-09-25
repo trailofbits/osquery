@@ -109,6 +109,14 @@ function(thriftMain)
     "${library_root}/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/config"
   )
+
+  add_custom_target(thirdparty_thrift_python DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/python_ext_build/thrift/Thrift.py")
+  add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/python_ext_build/thrift/Thrift.py"
+    COMMAND "${Python2_EXECUTABLE}" setup.py build --build-base="${CMAKE_CURRENT_BINARY_DIR}/python_ext_build" --build-lib="${CMAKE_CURRENT_BINARY_DIR}/python_ext_build" -q
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/lib/py"
+  )
+
+  set_target_properties(thirdparty_thrift_python PROPERTIES EXTENSION_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/python_ext_build")
 endfunction()
 
 thriftMain()
