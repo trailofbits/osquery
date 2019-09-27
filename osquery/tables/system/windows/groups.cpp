@@ -42,8 +42,6 @@ Status getGroupRow(const std::wstring& domainNameW,
   if (!domainNameW.empty() && !fqGroupName.empty()) {
     fqGroupName = domainNameW + L"\\" + fqGroupName;
   }
-  std::wcout << "fqGroupName: " << fqGroupName << "\n";
-  /* std::wcout << "groupName: " << groupName << "\n"; */
 
   auto sidSmartPtr = getSidFromUsername(groupName, domainNameW.c_str());
 
@@ -121,7 +119,6 @@ void processGroups(const std::wstring& domainNameW,
 QueryData genGroups(QueryContext& context) {
   QueryData results;
 
-  std::cout << "genGroups\n";
 
   processGroups(std::wstring(), results);
 

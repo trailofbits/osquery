@@ -175,8 +175,6 @@ void genDomainGroupFromSid(const std::wstring& domainName,
 QueryData genDomainGroups(QueryContext& context) {
   QueryData results;
 
-  std::cout << "genDomainGroups\n";
-
   auto domainName = getWinDomainName();
 
   if (context.constraints["groupname"].exists(EQUALS)) {

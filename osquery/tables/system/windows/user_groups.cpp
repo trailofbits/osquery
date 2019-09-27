@@ -38,8 +38,6 @@ Row getUserGroupRow(const std::string& uid, LPCWSTR groupname, const std::wstrin
   auto sid = getSidFromUsername(groupname);
   auto gid = getGidFromSid(static_cast<PSID>(sid.get()));
 
-  std::cout << "uid " << uid << "\n";
-
   Row r;
   r["uid"] = uid;
   r["gid"] = INTEGER(gid);
@@ -73,11 +71,6 @@ void processDomainUserGroups(const std::wstring& domainName,
     user = wstringToString(domainName.c_str()) + "\\" + user;
   }
 
-  /* std::wcout << "serverName " << serverName << "\n"; */
-  /* std::cout << "user " << user << "\n"; */
-
-  std::cout << "processDomainUserGroups " << user << "\n";
-
   ret = NetUserGetLocalGroups(serverName,
                               stringToWstring(user).c_str(),
                               userGroupInfoLevel,
@@ -95,9 +88,6 @@ void processDomainUserGroups(const std::wstring& domainName,
             << ret;
     return;
   }
-
-  std::cout << "numGroups " << numGroups << "\n";
-  std::cout << "totalUserGroups " << totalUserGroups << "\n";
 
   for (size_t i = 0; i < numGroups; i++) {
     Row r = callback(uid, ginfo[i].lgrui0_name, domainName, originalUsername);

@@ -81,19 +81,15 @@ QueryData genDomainUsers(QueryContext& context) {
   std::set<std::string> processedSids;
 
   auto domainName = getWinDomainName();
-  std::wcout << L"genDomainUsers: domainName: " << domainName << L"\n";
 
   // TODO implement opt for uuid=? What if both username and uuid
   // are given?
   if (context.constraints["username"].exists(EQUALS)) {
-    std::cout << " given username constraint!\n";
     auto usernames = context.constraints["username"].getAll(EQUALS);
     for (const auto& username : usernames) {
-      /* std::cout << username << "\n"; */
       genDomainUser(domainName, username, results);
     }
   } else if (context.constraints["uuid"].exists(EQUALS)) {
-    std::cout << " given uuid constraint!\n";
     auto uuids = context.constraints["uuid"].getAll(EQUALS);
     for (const auto& uuid : uuids) {
       genDomainUserFromSid(domainName, uuid, results);
