@@ -16,15 +16,15 @@ function(generateOsqueryUtilsInfo)
   )
 
   target_link_libraries(osquery_utils_info PUBLIC
-    global_cxx_settings
+    osquery_cxx_settings
     osquery_utils_conversions
     osquery_utils_macros
   )
 
   target_compile_definitions(osquery_utils_info PUBLIC
-    OSQUERY_VERSION=${OSQUERY_VERSION}
-    OSQUERY_BUILD_VERSION=${OSQUERY_VERSION}
-    OSQUERY_BUILD_SDK_VERSION=${OSQUERY_VERSION}
+    OSQUERY_VERSION=${OSQUERY_VERSION_INTERNAL}
+    OSQUERY_BUILD_VERSION=${OSQUERY_VERSION_INTERNAL}
+    OSQUERY_BUILD_SDK_VERSION=${OSQUERY_VERSION_INTERNAL}
   )
 
   set(public_header_files

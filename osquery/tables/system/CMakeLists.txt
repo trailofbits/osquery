@@ -6,7 +6,7 @@
 
 function(osqueryTablesSystemMain)
 
-  if(BUILD_TESTING)
+  if(OSQUERY_BUILD_TESTS)
     add_subdirectory("tests")
   endif()
 
@@ -102,6 +102,7 @@ function(generateOsqueryTablesSystemSystemtable)
       darwin/firewall.cpp
       darwin/gatekeeper.cpp
       darwin/homebrew_packages.cpp
+      darwin/ibridge.cpp
       darwin/iokit_registry.cpp
       darwin/kernel_extensions.cpp
       darwin/kernel_info.cpp
@@ -212,7 +213,7 @@ function(generateOsqueryTablesSystemSystemtable)
   )
 
   target_link_libraries(osquery_tables_system_systemtable PUBLIC
-    global_cxx_settings
+    osquery_cxx_settings
     osquery_headers
     osquery_core
     osquery_events
@@ -227,12 +228,17 @@ function(generateOsqueryTablesSystemSystemtable)
     osquery_utils_system_systemutils
     osquery_utils_system_time
     osquery_utils_system_uptime
-    thirdparty_augeas
     thirdparty_boost
-    thirdparty_libmagic
-    thirdparty_libxml2
     osquery_rows_processes_header
   )
+
+  if(NOT DEFINED PLATFORM_WINDOWS)
+    target_link_libraries(osquery_tables_system_systemtable PUBLIC
+      thirdparty_augeas
+      thirdparty_libmagic
+      thirdparty_libxml2
+    )
+  endif()
 
   if(DEFINED PLATFORM_LINUX)
     target_link_libraries(osquery_tables_system_systemtable PUBLIC
@@ -313,6 +319,11 @@ function(generateOsqueryTablesSystemSystemtable)
     add_test(NAME osquery_tables_system_tests_shellhistorytests-test COMMAND osquery_tables_system_tests_shellhistorytests-test)
     add_test(NAME osquery_tables_system_tests_sudoerstests-test COMMAND osquery_tables_system_tests_sudoerstests-test)
     add_test(NAME osquery_tables_system_tests_yumsourcestests-test COMMAND osquery_tables_system_tests_yumsourcestests-test)
+    add_test(NAME osquery_tables_system_tests_augeastests-test COMMAND osquery_tables_system_tests_augeastests-test)
+    set_tests_properties(
+      osquery_tables_system_tests_augeastests-test
+      PROPERTIES ENVIRONMENT "TEST_CONF_FILES_DIR=${TEST_CONFIGS_DIR}"
+    )
   endif()
 
   if(DEFINED PLATFORM_LINUX)
@@ -343,6 +354,7 @@ function(generateOsqueryTablesSystemSystemtable)
     )
   elseif(DEFINED PLATFORM_WINDOWS)
     add_test(NAME osquery_tables_system_tests_certificatestests-test COMMAND osquery_tables_system_tests_certificatestests-test)
+    add_test(NAME osquery_tables_system_tests_registrytests-test COMMAND osquery_tables_system_tests_registrytests-test)
   endif()
 
   add_test(NAME osquery_tables_system_tests_systemtablestests-test COMMAND osquery_tables_system_tests_systemtablestests-test)

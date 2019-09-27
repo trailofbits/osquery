@@ -6,7 +6,7 @@
 
 function(osqueryEventsMain)
 
-  if(BUILD_TESTING)
+  if(OSQUERY_BUILD_TESTS)
     add_subdirectory("tests")
   endif()
 
@@ -48,7 +48,7 @@ function(generateOsqueryEvents)
   enableLinkWholeArchive(osquery_events)
 
   target_link_libraries(osquery_events PUBLIC
-    global_cxx_settings
+    osquery_cxx_settings
     osquery_headers
     osquery_core
     osquery_config
@@ -118,13 +118,17 @@ function(generateOsqueryEvents)
   if(DEFINED PLATFORM_MACOS)
     add_test(NAME osquery_events_tests_fseventstests-test COMMAND osquery_events_tests_fseventstests-test)
   endif()
+
+  if(DEFINED PLATFORM_WINDOWS)
+    add_test(NAME osquery_events_tests_windowseventlogtests-test COMMAND osquery_events_tests_windowseventlogtests-test)
+  endif()
 endfunction()
 
 function(generateOsqueryEventsEventsregistry)
   add_osquery_library(osquery_events_eventsregistry EXCLUDE_FROM_ALL events.cpp)
 
   target_link_libraries(osquery_events_eventsregistry PUBLIC
-    global_cxx_settings
+    osquery_cxx_settings
     osquery_core
     osquery_dispatcher
     osquery_sql

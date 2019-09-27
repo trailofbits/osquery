@@ -97,6 +97,7 @@ QueryData genLoggedInUsers(QueryContext& context) {
       VLOG(1) << "Error querying WTS session information (" << GetLastError()
               << ")";
       results.push_back(r);
+      WTSFreeMemory(sessionInfo);
       continue;
     }
 
@@ -115,7 +116,7 @@ QueryData genLoggedInUsers(QueryContext& context) {
     r["pid"] = INTEGER(-1);
 
     if (clientInfo != nullptr) {
-      WTSFreeMemoryEx(WTSTypeSessionInfoLevel1, clientInfo, count);
+      WTSFreeMemory(clientInfo);
       clientInfo = nullptr;
       wtsClient = nullptr;
     }
@@ -124,7 +125,7 @@ QueryData genLoggedInUsers(QueryContext& context) {
         getSidFromUsername(stringToWstring(wtsSession->UserName));
 
     if (sessionInfo != nullptr) {
-      WTSFreeMemoryEx(WTSTypeSessionInfoLevel1, sessionInfo, count);
+      WTSFreeMemory(sessionInfo);
       sessionInfo = nullptr;
     }
 
@@ -144,7 +145,7 @@ QueryData genLoggedInUsers(QueryContext& context) {
   }
 
   if (pSessionInfo != nullptr) {
-    WTSFreeMemoryEx(WTSTypeSessionInfoLevel1, pSessionInfo, count);
+    WTSFreeMemory(pSessionInfo);
     pSessionInfo = nullptr;
   }
 
