@@ -741,6 +741,10 @@ osquery_gentable_cxx_library(
             "windows",
         ),
         (
+            "windows/office_macros.table",
+            "windows",
+        ),
+        (
             "windows/ntdomains.table",
             "windows",
         ),

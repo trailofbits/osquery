@@ -244,6 +244,7 @@ function(generateNativeTables)
     "windows/disk_info.table:windows"
     "windows/chocolatey_packages.table:windows"
     "windows/logical_drives.table:windows"
+    "windows/office_macros.table:windows"
     "windows/ntdomains.table:windows"
     "windows/authenticode.table:windows"
     "windows/pipes.table:windows"

@@ -178,6 +178,7 @@ function(generateOsqueryTablesSystemSystemtable)
       windows/ntdomains.cpp
       windows/ntfs_acl_permissions.cpp
       windows/objects.cpp
+      windows/office_macros.cpp
       windows/os_version.cpp
       windows/patches.cpp
       windows/physical_disk_performance.cpp

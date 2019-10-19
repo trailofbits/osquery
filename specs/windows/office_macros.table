@@ -1,0 +1,14 @@
+table_name("office_macro_policies")
+description("Details for what policies are in place regarding Microsoft Office macros.")
+schema([
+    Column("sid", TEXT, "The user SID"),
+    Column("version", TEXT, "The version of Microsoft Office referenced"),
+    Column("product", TEXT, "The Office product referenced"),
+    Column("policy", TEXT, "Group or local"),
+    Column("enabled", TEXT, "The macro policy value; 1 is enabled, 2 is disable with notification, 3 is permit signed macros only, and 4 is disable all without notification"),
+])
+implementation("office_macros@genOfficeMacros")
+examples([
+  "select * from office_macros",
+  "select * from office_macros where group_policy='not set'"
+])
