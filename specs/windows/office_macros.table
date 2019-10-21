@@ -10,5 +10,5 @@ schema([
 implementation("office_macros@genOfficeMacros")
 examples([
   "select * from office_macros",
-  "select * from office_macros where group_policy='not set'"
+  "select * from office_macros enabled=1"
 ])
