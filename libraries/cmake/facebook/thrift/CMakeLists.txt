@@ -35,8 +35,6 @@ function(thrifMain)
 
   target_link_libraries("thirdparty_${name}" INTERFACE thirdparty_boost)
 
-  add_custom_target(thirdparty_thrift_python)
-  set_target_properties(thirdparty_thrift_python PROPERTIES EXTENSION_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/${name}/${version}/lib/python2.7/site-packages")
 endfunction()
 
 thrifMain()

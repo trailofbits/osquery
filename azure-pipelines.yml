@@ -20,7 +20,7 @@ jobs:
       vmImage: 'Ubuntu-16.04'
 
     container:
-      image: trailofbits/osquery:ubuntu-18.04-toolchain-b667da5e
+      image: trailofbits/osquery:ubuntu-18.04-toolchain-41549d60
       options: --privileged
 
     timeoutInMinutes: 120
@@ -187,7 +187,7 @@ jobs:
     - script: |
         brew upgrade
         brew install ccache flex bison
-        pip install setuptools pexpect psutil timeout_decorator six
+        pip3 install setuptools pexpect psutil timeout_decorator six thrift==0.11.0 osquery
       displayName: "Install Homebrew and prerequisites"
       timeoutInMinutes: 20
 
@@ -310,8 +310,8 @@ jobs:
     - checkout: self
 
     - powershell: |
-        $python2_path = ((Get-Item C:\hostedtoolcache\windows\Python\2*\x64) | Sort-Object -Descending)[0].FullName
-        & $python2_path\python -m pip install setuptools psutil timeout_decorator thrift
+        $python3_path = ((Get-Item C:\hostedtoolcache\windows\Python\3*\x64) | Sort-Object -Descending)[0].FullName
+        & $python3_path\python -m pip install setuptools psutil timeout_decorator thrift==0.11.0 osquery pywin32
       displayName: Install tests prerequisites
 
     - powershell: |
