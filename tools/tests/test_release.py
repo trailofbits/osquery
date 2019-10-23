@@ -29,7 +29,7 @@ class ReleaseTests(test_base.QueryTester):
     @test_base.flaky
     def test_pack_queries(self):
         packs = {}
-        PACKS_DIR = test_base.ARGS.build + "/package/linux/packs"
+        PACKS_DIR = test_base.BUILD_DIR + "/package/linux/packs"
         for root, dirs, files in os.walk(PACKS_DIR):
             for name in files:
                 with open(os.path.join(PACKS_DIR, name), 'r') as fh:
