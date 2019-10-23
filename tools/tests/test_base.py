@@ -544,7 +544,7 @@ def flaky(gen):
 
 class Tester(object):
     def __init__(self):
-        global ARGS, CONFIG, CONFIG_DIR, TEST_CONFIGS_DIR
+        global ARGS, CONFIG, CONFIG_DIR, TEST_CONFIGS_DIR, BUILD_DIR
         parser = argparse.ArgumentParser(
             description=("osquery python integration testing."))
 
@@ -585,6 +585,7 @@ class Tester(object):
         utils.reset_dir(CONFIG_DIR)
         CONFIG = read_config(ARGS.config) if ARGS.config else DEFAULT_CONFIG
         TEST_CONFIGS_DIR = ARGS.test_configs_dir
+        BUILD_DIR = ARGS.build
 
     @timeout_decorator.timeout(20 * 60)
     def run(self):
