@@ -157,6 +157,7 @@ class OsqueryWrapper(REPLWrapper):
         '''
         query = query + ';'  # Extra semicolon causes no harm
         result = self.run_command(query)
+        result = result.decode("utf-8")
         # On Mac, the query appears first in the string. Remove it if so.
         result = re.sub(re.escape(query), '', result).strip()
         result_lines = result.splitlines()
@@ -284,6 +285,7 @@ class ProcRunner(object):
         if self.proc:
             try:
                 os.kill(self.pid, sig)
+                self.proc.wait()   # == -sig.value on posix
             except:
                 pass
         self.proc = None
@@ -531,7 +533,7 @@ def flaky(gen):
         i = 1
         for exc in exceptions:
             print("Test (attempt %d) %s::%s failed: %s" %
-                  (i, this.__class__.__name__, gen.__name__, str(exc[0])))
+                  (i, this.__class__.__name__, gen.__name__, str(exc)))
             i += 1
         if len(exceptions) > 0:
             raise exceptions[0]
