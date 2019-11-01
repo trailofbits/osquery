@@ -1,4 +1,4 @@
-include(../../external/cmake/cmakelibs.cmake)
+include(${CMAKE_SOURCE_DIR}/external/cmake/cmakelibs.cmake)
 
 function(osqueryExtensionsExampleMain)
     addOsqueryExtension(example_extension example_extension.cpp)

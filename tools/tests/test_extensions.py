@@ -95,8 +95,8 @@ class ExtensionTests(test_base.ProcessGenerator, unittest.TestCase):
         # Now that an extension has started, check extension list
         result = test_base.expect(em.extensions, 1)
         self.assertEqual(len(result), 1)
-        for ex_uuid in result:
-            ex_data = result[ex_uuid]
+        ex_uuid = list(result.keys())[0]
+        ex_data = result[ex_uuid]
         self.assertEqual(ex_data.name, "example")
         self.assertEqual(ex_data.version, "0.0.1")
         self.assertEqual(ex_data.min_sdk_version, "0.0.0")
@@ -334,8 +334,7 @@ class ExtensionTests(test_base.ProcessGenerator, unittest.TestCase):
         # Need the manager to request the extension's UUID.
         result = test_base.expect(em.extensions, 1)
         self.assertTrue(len(result), 1)
-        for ex_uuid in result:
-            ex_data = result[ex_uuid]
+        ex_uuid = list(result.keys())[0]
         client2 = test_base.EXClient(extension.options["extensions_socket"],
             uuid=ex_uuid)
         test_base.expectTrue(client2.try_open)
