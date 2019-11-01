@@ -6,8 +6,9 @@
  *  the LICENSE file found in the root directory of this source tree.
  */
 
-#include <osquery/sdk.h>
+#include <osquery/sdk/sdk.h>
 #include <osquery/system.h>
+#include <osquery/sql/dynamic_table_row.h>
 
 using namespace osquery;
 
@@ -73,9 +74,9 @@ class ComplexExampleTable : public TablePlugin {
 
     // Use the basic 'force' flag to check implicit SQL usage.
     auto flags =
-        SQL("select default_value from osquery_flags where name = 'force'");
-    if (flags.rows().size() > 0) {
-      r["flag_test"] = flags.rows().back().at("default_value");
+        SQL::selectFrom({"default_value"}, "osquery_flags", "name", EQUALS, "force");
+    if (flags.size() > 0) {
+        r["flag_test"] = flags[0]["default_value"];
     }
 
     std::string content;
