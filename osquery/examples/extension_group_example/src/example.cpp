@@ -11,18 +11,19 @@
 namespace osquery {
 TableColumns ExampleTable::columns() const {
   return {
-      std::make_tuple("example_text", TEXT_TYPE, ColumnOptions::DEFAULT),
-      std::make_tuple("example_integer", INTEGER_TYPE, ColumnOptions::DEFAULT),
+    std::make_tuple("example_text", TEXT_TYPE, ColumnOptions::DEFAULT),
+    std::make_tuple("example_integer", INTEGER_TYPE, ColumnOptions::DEFAULT),
   };
 }
 
-QueryData ExampleTable::generate(QueryContext& request) {
-  static_cast<void>(request);
+TableRows ExampleTable::generate(QueryContext& request) {
+  TableRows results;
 
-  Row r;
+  auto r = make_table_row();
   r["example_text"] = "example";
   r["example_integer"] = INTEGER(1);
 
-  return {r};
+  results.push_back(std::move(r));
+  return results;
 }
 } // namespace osquery
