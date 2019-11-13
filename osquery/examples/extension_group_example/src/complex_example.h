@@ -13,7 +13,7 @@
 #include <osquery/sql/dynamic_table_row.h>
 
 namespace osquery {
-class ExampleTable : public TablePlugin {
+class ComplexExampleTable : public TablePlugin {
  private:
   TableColumns columns() const;
   TableRows generate(QueryContext& request);

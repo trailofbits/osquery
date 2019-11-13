@@ -31,6 +31,7 @@ function(osqueryMain)
   add_subdirectory("experimental")
   add_subdirectory("system")
   add_subdirectory("examples")
+  add_subdirectory("examples/extension_group_example")
 
   generateOsqueryHeaders()
   generateOsqueryd()

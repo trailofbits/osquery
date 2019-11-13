@@ -396,6 +396,55 @@ class ExtensionTests(test_base.ProcessGenerator, unittest.TestCase):
         client.close()
         daemon.kill(True)
 
+    @test_base.flaky
+    def test_10_extension_group(self):
+        loader = test_base.Autoloader(
+            [test_base.BUILD_DIR + "/osquery/examples/extension_group_example/osquery_extension_group.ext"])
+        daemon = self._run_daemon({
+            "disable_watchdog": True,
+            "extensions_timeout": EXTENSION_TIMEOUT,
+            "extensions_autoload": loader.path,
+        })
+        self.assertTrue(daemon.isAlive())
+
+        # Get a python-based thrift client for the manager (core).
+        client = test_base.EXClient(daemon.options["extensions_socket"])
+        self.assertTrue(client.open())
+        em = client.getEM()
+
+        # The waiting extension should have connected to the daemon.
+        # This expect statement will block with a short timeout.
+        result = test_base.expect(em.extensions, 1)
+        self.assertEqual(len(result), 1)
+
+        # Make sure the extension includes a custom registry plugin
+        result = em.query("select * from example")
+        if len(result.response) == 0:
+            time.sleep(0.5)
+            result = em.query("select * from example")
+        self.assertEqual(result.status.code, 0)
+        self.assertEqual(len(result.response), 1)
+        self.assertTrue("example_text" in result.response[0])
+        self.assertTrue("example_integer" in result.response[0])
+        self.assertEqual(result.response[0]["example_text"], "example")
+        self.assertEqual(result.response[0]["example_integer"], "1")
+
+        # The 'complex_example' table reports several columns.
+        # Each is a 'test_type', check each expected value.
+        result = em.query("select * from complex_example")
+        if len(result.response) == 0:
+            # There is a brief race between register and registry broadcast
+            # That fast external client fight when querying tables.
+            # Other config/logger plugins have wrappers to retry/wait.
+            time.sleep(0.5)
+            result = em.query("select * from complex_example")
+
+        self.assertEqual(result.response[0]['flag_test'], 'false')
+        self.assertEqual(result.response[0]['database_test'], '1')
+
+        client.close()
+        daemon.kill(True)
+
 if __name__ == "__main__":
     test_base.assertPermissions()
     module = test_base.Tester()
