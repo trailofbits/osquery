@@ -124,3 +124,7 @@
 [submodule "libraries/cmake/source/augeas/gnulib/src"]
 	path = libraries/cmake/source/augeas/gnulib/src
 	url = https://github.com/osquery/third-party-gnulib
+[submodule "libraries/cmake/source/grpc/src"]
+	path = libraries/cmake/source/grpc/src
+	url = https://github.com/grpc/grpc.git
+	branch = v1.26.x
