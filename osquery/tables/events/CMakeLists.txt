@@ -28,6 +28,7 @@ function(generateOsqueryTablesEventsEventstable)
       linux/socket_events.cpp
       linux/syslog_events.cpp
       linux/user_events.cpp
+      linux/containerd_events.cpp
     )
 
   elseif(DEFINED PLATFORM_MACOS)
