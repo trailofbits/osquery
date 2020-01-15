@@ -61,6 +61,7 @@ function(generateOsqueryCore)
     thirdparty_glog
     thirdparty_openssl
     thirdparty_sqlite
+    thirdparty_grpc
   )
 
   if(DEFINED PLATFORM_LINUX)

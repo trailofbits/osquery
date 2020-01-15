@@ -120,6 +120,7 @@ function(importLibraries)
     "Linux,Darwin,Windows:thrift"
     "Linux:util-linux"
     "Linux,Darwin:yara"
+    "Linux,Darwin:grpc"
     "Linux,Darwin,Windows:zlib"
     "Linux,Darwin,Windows:zstd"
     "Linux,Darwin,Windows:openssl"
