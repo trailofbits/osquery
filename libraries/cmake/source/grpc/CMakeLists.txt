@@ -8,16 +8,13 @@ function(grpcMain)
   set(gRPC_BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(gRPC_BACKWARDS_COMPATIBILITY_MODE OFF CACHE BOOL "" FORCE)
   
-  # Disable thirdparty zlib, gflags, cares module
+  # Disable thirdparty zlib, gflags, cares and openssl module
+  # instead use the osquery provided library
   set(gRPC_ZLIB_PROVIDER "" CACHE STRING "" FORCE)
   set(gRPC_GFLAGS_PROVIDER "" CACHE STRING "" FORCE)
   set(gRPC_CARES_PROVIDER "" CACHE STRING "" FORCE)
   set(gRPC_PROTOBUF_PROVIDER "" CACHE STRING "" FORCE)
-    
-  # Disable the lookup for OpenSSL and set the _gRPC_SSL_LIBRARIES
-  # correctly;
   set(gRPC_SSL_PROVIDER "" CACHE STRING "" FORCE)
-  set(_gRPC_SSL_LIBRARIES thirdparty_openssl)
 
   set(library_root "${CMAKE_CURRENT_SOURCE_DIR}/src")
   add_subdirectory("${library_root}" "${CMAKE_CURRENT_BINARY_DIR}/submodule" EXCLUDE_FROM_ALL)
@@ -31,12 +28,16 @@ function(grpcMain)
 	${cares_include_directory}
   )
 
+  target_link_libraries(grpc
+    thirdparty_zlib
+    thirdparty_openssl
+	thirdparty_googletest
+  )
+
   add_library(thirdparty_grpc INTERFACE)
 
   target_link_libraries(thirdparty_grpc INTERFACE
     grpc
-    thirdparty_zlib
-    thirdparty_googletest
   )
 
   target_include_directories(thirdparty_grpc INTERFACE
