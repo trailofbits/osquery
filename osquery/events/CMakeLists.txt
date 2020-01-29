@@ -20,6 +20,7 @@ function(generateOsqueryEvents)
     list(APPEND source_files
       linux/auditdnetlink.cpp
       linux/auditeventpublisher.cpp
+      linux/containereventpublisher.cpp
       linux/inotify.cpp
       linux/syslog.cpp
       linux/udev.cpp
