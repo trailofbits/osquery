@@ -39,6 +39,9 @@ class ContainerEventPublisher final
   virtual ~ContainerEventPublisher() {
     tearDown();
   }
+ private:
+  std::string socket_addr;
+  std::string url_events;
 
 };
 
