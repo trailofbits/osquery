@@ -12,8 +12,8 @@ function(grpcMain)
   # instead use the osquery provided library
   set(gRPC_ZLIB_PROVIDER "" CACHE STRING "" FORCE)
   set(gRPC_GFLAGS_PROVIDER "" CACHE STRING "" FORCE)
-  set(gRPC_CARES_PROVIDER "" CACHE STRING "" FORCE)
-  set(gRPC_PROTOBUF_PROVIDER "" CACHE STRING "" FORCE)
+  set(gRPC_CARES_PROVIDER "module" CACHE STRING "" FORCE)
+  set(gRPC_PROTOBUF_PROVIDER "module" CACHE STRING "" FORCE)
   set(gRPC_SSL_PROVIDER "" CACHE STRING "" FORCE)
 
   set(library_root "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -25,23 +25,25 @@ function(grpcMain)
   )
 
   target_include_directories(grpc PRIVATE
-	${cares_include_directory}
+    ${cares_include_directory}
   )
 
   target_link_libraries(grpc
     thirdparty_zlib
     thirdparty_openssl
-	thirdparty_googletest
+    thirdparty_googletest
   )
 
   add_library(thirdparty_grpc INTERFACE)
 
   target_link_libraries(thirdparty_grpc INTERFACE
     grpc
+    libprotobuf
   )
 
   target_include_directories(thirdparty_grpc INTERFACE
     "${CMAKE_CURRENT_BINARY_DIR}/submodule/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/third_party/protobuf/src/"
   )
 endfunction()
 

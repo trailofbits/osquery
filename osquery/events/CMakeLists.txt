@@ -24,6 +24,8 @@ function(generateOsqueryEvents)
       linux/inotify.cpp
       linux/syslog.cpp
       linux/udev.cpp
+      proto/events.pb.cc
+      proto/fieldpath.pb.cc
     )
 
   elseif(DEFINED PLATFORM_MACOS)
@@ -82,6 +84,7 @@ function(generateOsqueryEvents)
     set(platform_public_header_files
       linux/auditdnetlink.h
       linux/auditeventpublisher.h
+      linux/containereventpublisher.h
       linux/inotify.h
       linux/process_events.h
       linux/process_file_events.h

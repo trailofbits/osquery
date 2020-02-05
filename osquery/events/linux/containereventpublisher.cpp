@@ -10,6 +10,8 @@
 
 #include <boost/asio.hpp>
 
+#include <grpcpp/grpcpp.h>
+
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 #include <osquery/registry_factory.h>
@@ -23,11 +25,13 @@ REGISTER(ContainerEventPublisher, "event_publisher", "containerevent");
 
 FLAG(string,
      container_socket,
-     "/var/run/docker.sock",
+     "/run/containerd/containerd.sock",
      "Docker UNIX domain socket path");
 
 
 Status ContainerEventPublisher::setUp() {
+  // Initialize the grpc library
+  grpc_init();
   LOG(ERROR) << "ContainerEventPublisher::setUp called\n";
   url_events = std::string("/events");
   return Status::success();
@@ -40,6 +44,7 @@ void ContainerEventPublisher::configure() {
 
 void ContainerEventPublisher::tearDown() {
   LOG(ERROR) << "ContainerEventPublisher::tearDown called\n";
+  grpc_shutdown();
 }
 
 Status ContainerEventPublisher::run() {
@@ -54,7 +59,7 @@ Status ContainerEventPublisher::run() {
       LOG(ERROR) << "Error connecting to docker sock: " + stream.error().message();
     }
 
-    stream << "GET " << url
+    stream << "GET " << url_events
         << " HTTP/1.0\r\nAccept: */*\r\nConnection: close\r\n\r\n"
         << std::flush;
 
