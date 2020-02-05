@@ -1,0 +1,14 @@
+table_name("container_events")
+description("Track container events.")
+schema([
+    Column("time", BIGINT, "Time of execution in UNIX time"),
+    Column("create", TEXT, "Container ID"),
+    Column("attach", TEXT, "Container ID or Image name"),
+    Column("connect", TEXT, "Container ID or Image name"),
+    Column("start", TEXT, "Container ID or Image name"),
+    Column("die", TEXT, "Container ID or Image name"),
+    Column("disconnect", BIGINT, "Container ID or Image Name")
+])
+
+attributes(event_subscriber=True)
+implementation("container_events@container_events::genTable")
