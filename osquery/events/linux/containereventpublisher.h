@@ -18,12 +18,30 @@
 
 namespace osquery {
 
+struct ContainerEventData final {
+  std::uint64_t timestamp;
+
+  std::string event;
+  std::string container_id;
+  std::string image_name;
+};
+
+/// Audit event descriptor
+struct ContainerEvent final {
+  enum class Type { ContainerEvent, ImageEvent, PluginEvent };
+
+  Type type;
+  ContainerEventData data;
+};
+
+
 struct ContainerSubscriptionContext final : public SubscriptionContext {
  private:
   friend class ContainerEventPublisher;
 };
 
 struct ContainerEventContext final : public EventContext {
+  std::vector<ContainerEvent> container_events;
 };
 
 class ContainerEventPublisher final
@@ -42,7 +60,6 @@ class ContainerEventPublisher final
  private:
   std::string socket_addr;
   std::string url_events;
-
 };
 
 } // namespace osquery

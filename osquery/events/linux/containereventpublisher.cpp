@@ -29,11 +29,20 @@ FLAG(string,
      "Docker UNIX domain socket path");
 
 
+namespace {
+bool IsPublisherEnabled() noexcept {
+  return true;
+}
+} // namespace
+
+
 Status ContainerEventPublisher::setUp() {
+  if (!IsPublisherEnabled()) {
+    return Status(1, "Container Event Publisher disabled via configuration");
+  }
+
   // Initialize the grpc library
   grpc_init();
-  LOG(ERROR) << "ContainerEventPublisher::setUp called\n";
-  url_events = std::string("/events");
   return Status::success();
 }
 
@@ -48,47 +57,6 @@ void ContainerEventPublisher::tearDown() {
 }
 
 Status ContainerEventPublisher::run() {
-  static const std::regex httpOkRegex("HTTP/1\\.(0|1) 200 OK\\\r");
-  LOG(ERROR) << "ContainerEventPublisher::run called\n";
-
-  try {
-    local::stream_protocol::endpoint ep(FLAGS_container_socket);
-    local::stream_protocol::iostream stream(ep);
-
-    if (!stream) {
-      LOG(ERROR) << "Error connecting to docker sock: " + stream.error().message();
-    }
-
-    stream << "GET " << url_events
-        << " HTTP/1.0\r\nAccept: */*\r\nConnection: close\r\n\r\n"
-        << std::flush;
-
-    if (stream.eof()) {
-      stream.close();
-      LOG(ERROR) << "Empty docker API response for: " + url_events;
-    }
-
-    // All status responses are expected to be 200
-    std::string str;
-    std::getline(stream, str);
-
-    std::smatch match;
-    if (!std::regex_match(str, match, httpOkRegex)) {
-      stream.close();
-      LOG(ERROR) << "Invalid docker API response for " + url_events + ": " + str;
-      return Status(1, "Invalid docker API response for " + url_events + ": " + str);
-    }
-
-    while (!stream.eof() && str != "\r") {
-      getline(stream, str);
-    }
-
-    LOG(ERROR) << "docker API response for " + url_events + ": " + str;
-
-  } catch (const std::exception& e) {
-
-  }
-
   auto event_context = createEventContext();
   fire(event_context);
 

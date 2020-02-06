@@ -24,6 +24,7 @@ function(generateOsqueryEvents)
       linux/inotify.cpp
       linux/syslog.cpp
       linux/udev.cpp
+      async_client/container_client.cpp
       proto/events.pb.cc
       proto/fieldpath.pb.cc
     )
