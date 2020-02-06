@@ -4,7 +4,7 @@
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 
-#include <osquery/events/async_client/client_interface.h>
+#include "client_interface.h"
 
 namespace osquery {
 

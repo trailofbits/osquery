@@ -26,7 +26,9 @@ function(generateOsqueryEvents)
       linux/udev.cpp
       async_client/container_client.cpp
       proto/events.pb.cc
+      proto/events.grpc.pb.cc
       proto/fieldpath.pb.cc
+      proto/fieldpath.grpc.pb.cc
     )
 
   elseif(DEFINED PLATFORM_MACOS)

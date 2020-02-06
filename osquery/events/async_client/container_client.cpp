@@ -6,8 +6,8 @@
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 
-#include <osquery/events/async_client/client_interface.h>
-#include <osquery/events/async_client/container_client.h>
+#include "client_interface.h"
+#include "container_client.h"
 
 namespace osquery {
 

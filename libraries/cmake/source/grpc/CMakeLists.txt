@@ -7,7 +7,8 @@
 function(grpcMain)
   set(gRPC_BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(gRPC_BACKWARDS_COMPATIBILITY_MODE OFF CACHE BOOL "" FORCE)
-  
+  set(gRPC_BUILD_GRPC_CPP_PLUGIN OFF CACHE BOOL "" FORCE)
+
   # Disable thirdparty zlib, gflags, cares and openssl module
   # instead use the osquery provided library
   set(gRPC_ZLIB_PROVIDER "" CACHE STRING "" FORCE)
@@ -38,6 +39,8 @@ function(grpcMain)
 
   target_link_libraries(thirdparty_grpc INTERFACE
     grpc
+    grpc++
+    gpr
     libprotobuf
   )
 
@@ -45,6 +48,27 @@ function(grpcMain)
     "${CMAKE_CURRENT_BINARY_DIR}/submodule/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/third_party/protobuf/src/"
   )
+
+
+  target_link_libraries(protoc thirdparty_cxx_settings)
+
+  add_executable(grpc_cpp_plugin
+    "${library_root}/src/compiler/cpp_plugin.cc"
+    "${library_root}/src/compiler/cpp_generator.cc"
+ )
+
+  target_include_directories(grpc_cpp_plugin PRIVATE
+    "${library_root}"
+    "${library_root}/include"
+  )
+
+  target_link_libraries(grpc_cpp_plugin PUBLIC
+    grpc
+    libprotobuf
+    libprotoc
+    thirdparty_c_settings
+  )
+
 endfunction()
 
 grpcMain()
