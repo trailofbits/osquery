@@ -21,6 +21,8 @@ function(grpcMain)
   set(gRPC_CARES_PROVIDER "module" CACHE STRING "" FORCE)
 
   set(library_root "${CMAKE_CURRENT_SOURCE_DIR}/src")
+  set(PROTOC_PATH "${CMAKE_CURRENT_BINARY_DIR}" CACHE STRING "" FORCE)
+
   add_subdirectory("${library_root}" "${CMAKE_CURRENT_BINARY_DIR}/submodule" EXCLUDE_FROM_ALL)
 
   set(cares_include_directory
@@ -65,7 +67,6 @@ function(grpcMain)
 
   target_link_libraries(grpc_cpp_plugin PUBLIC
     grpc
-    #libprotoc
     thirdparty_protobuf
     thirdparty_cxx_settings
   )

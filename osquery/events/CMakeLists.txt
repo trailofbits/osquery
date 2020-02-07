@@ -16,6 +16,30 @@ endfunction()
 
 function(generateOsqueryEvents)
 
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/client/events.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/client/events.pb.cc
+    COMMAND ${PROTOC_PATH}/protoc -I ${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/client
+        ${CMAKE_CURRENT_SOURCE_DIR}/proto/events.proto
+  )
+
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/client/fieldpath.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/client/fieldpath.pb.cc
+    COMMAND ${PROTOC_PATH}/protoc -I ${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/client
+        ${CMAKE_CURRENT_SOURCE_DIR}/proto/fieldpath.proto
+  )
+
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/client/events.grpc.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/client/events.grpc.pb.cc
+    COMMAND ${PROTOC_PATH}/protoc -I ${CMAKE_CURRENT_SOURCE_DIR}/proto --grpc_out=${CMAKE_CURRENT_SOURCE_DIR}/client
+        --plugin=protoc-gen-grpc=${PROTOC_PATH}/grpc_cpp_plugin  ${CMAKE_CURRENT_SOURCE_DIR}/proto/events.proto
+  )
+
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/client/fieldpath.grpc.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/client/fieldpath.grpc.pb.cc
+    COMMAND ${PROTOC_PATH}/protoc -I ${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/client
+        --plugin=protoc-gen-grpc=${PROTOC_PATH}/grpc_cpp_plugin ${CMAKE_CURRENT_SOURCE_DIR}/proto/fieldpath.proto
+  )
+
   if(DEFINED PLATFORM_LINUX)
     list(APPEND source_files
       linux/auditdnetlink.cpp
@@ -24,11 +48,11 @@ function(generateOsqueryEvents)
       linux/inotify.cpp
       linux/syslog.cpp
       linux/udev.cpp
-      async_client/container_client.cpp
-      proto/events.pb.cc
-      proto/events.grpc.pb.cc
-      proto/fieldpath.pb.cc
-      proto/fieldpath.grpc.pb.cc
+      client/container_client.cpp
+      client/events.pb.cc 
+      client/events.grpc.pb.cc
+      client/fieldpath.pb.cc
+      client/fieldpath.grpc.pb.cc
     )
 
   elseif(DEFINED PLATFORM_MACOS)
@@ -39,6 +63,11 @@ function(generateOsqueryEvents)
       darwin/iokit.cpp
       darwin/openbsm.cpp
       darwin/scnetwork.cpp
+      client/container_client.cpp
+      client/events.pb.cc 
+      client/events.grpc.pb.cc
+      client/fieldpath.pb.cc
+      client/fieldpath.grpc.pb.cc
     )
 
   elseif(DEFINED PLATFORM_WINDOWS)
@@ -95,6 +124,10 @@ function(generateOsqueryEvents)
       linux/socket_events.h
       linux/syslog.h
       linux/udev.h
+      client/events.pb.h 
+      client/events.grpc.pb.h
+      client/fieldpath.pb.h
+      client/fieldpath.grpc.pb.h
     )
 
   elseif(DEFINED PLATFORM_MACOS)
@@ -105,6 +138,10 @@ function(generateOsqueryEvents)
       darwin/iokit.h
       darwin/openbsm.h
       darwin/scnetwork.h
+      client/events.pb.h 
+      client/events.grpc.pb.h
+      client/fieldpath.pb.h
+      client/fieldpath.grpc.pb.h
     )
 
   elseif(DEFINED PLATFORM_WINDOWS)
