@@ -10,6 +10,11 @@ include("${CMAKE_CURRENT_LIST_DIR}/utils.cmake")
 importSourceSubmodule(
   NAME "grpc"
 
-  SHALLOW_SUBMODULES
+  NO_RECURSIVE
+
+  SUBMODULES
+    "src"
+
+  PATCH
     "src"
 )

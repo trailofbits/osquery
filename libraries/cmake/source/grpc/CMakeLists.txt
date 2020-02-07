@@ -4,6 +4,8 @@
 # This source code is licensed in accordance with the terms specified in
 # the LICENSE file found in the root directory of this source tree.
 
+include(cmake/protobuf.cmake)
+
 function(grpcMain)
   set(gRPC_BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(gRPC_BACKWARDS_COMPATIBILITY_MODE OFF CACHE BOOL "" FORCE)
@@ -13,9 +15,10 @@ function(grpcMain)
   # instead use the osquery provided library
   set(gRPC_ZLIB_PROVIDER "" CACHE STRING "" FORCE)
   set(gRPC_GFLAGS_PROVIDER "" CACHE STRING "" FORCE)
-  set(gRPC_CARES_PROVIDER "module" CACHE STRING "" FORCE)
-  set(gRPC_PROTOBUF_PROVIDER "module" CACHE STRING "" FORCE)
+  set(gRPC_PROTOBUF_PROVIDER "" CACHE STRING "" FORCE)
   set(gRPC_SSL_PROVIDER "" CACHE STRING "" FORCE)
+
+  set(gRPC_CARES_PROVIDER "module" CACHE STRING "" FORCE)
 
   set(library_root "${CMAKE_CURRENT_SOURCE_DIR}/src")
   add_subdirectory("${library_root}" "${CMAKE_CURRENT_BINARY_DIR}/submodule" EXCLUDE_FROM_ALL)
@@ -29,7 +32,8 @@ function(grpcMain)
     ${cares_include_directory}
   )
 
-  target_link_libraries(grpc
+  target_link_libraries(grpc PRIVATE
+    c-ares
     thirdparty_zlib
     thirdparty_openssl
     thirdparty_googletest
@@ -41,16 +45,13 @@ function(grpcMain)
     grpc
     grpc++
     gpr
-    libprotobuf
+    thirdparty_protobuf
   )
 
   target_include_directories(thirdparty_grpc INTERFACE
     "${CMAKE_CURRENT_BINARY_DIR}/submodule/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/third_party/protobuf/src/"
   )
-
-
-  target_link_libraries(protoc thirdparty_cxx_settings)
 
   add_executable(grpc_cpp_plugin
     "${library_root}/src/compiler/cpp_plugin.cc"
@@ -64,11 +65,12 @@ function(grpcMain)
 
   target_link_libraries(grpc_cpp_plugin PUBLIC
     grpc
-    libprotobuf
-    libprotoc
-    thirdparty_c_settings
+    #libprotoc
+    thirdparty_protobuf
+    thirdparty_cxx_settings
   )
-
+   
 endfunction()
 
 grpcMain()
+
