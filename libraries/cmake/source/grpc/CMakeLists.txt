@@ -41,6 +41,13 @@ function(grpcMain)
     thirdparty_googletest
   )
 
+  target_link_libraries(grpc++ PRIVATE
+    c-ares
+    thirdparty_zlib
+    thirdparty_openssl
+    thirdparty_googletest
+  )
+
   add_library(thirdparty_grpc INTERFACE)
 
   target_link_libraries(thirdparty_grpc INTERFACE

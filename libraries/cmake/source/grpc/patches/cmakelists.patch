@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3d4418a..e137e97 100644
+index 3d4418a..011fd09 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1504,7 +1504,7 @@ target_include_directories(grpc
@@ -20,3 +20,12 @@ index 3d4418a..e137e97 100644
  endif()
  
  foreach(_hdr
+@@ -3529,7 +3529,7 @@ target_include_directories(grpc++
+     ${_gRPC_ZLIB_INCLUDE_DIR}
+     ${_gRPC_PROTO_GENS_DIR}
+ )
+-target_link_libraries(grpc++
++target_link_libraries(grpc++ PRIVATE
+   ${_gRPC_BASELIB_LIBRARIES}
+   ${_gRPC_SSL_LIBRARIES}
+   ${_gRPC_PROTOBUF_LIBRARIES}
