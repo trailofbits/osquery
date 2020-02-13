@@ -8,7 +8,7 @@
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 
-#include "../proto/events.pb.h"
+#include "events.pb.h"
 
 namespace osquery {
 class IBaseRequestOutput {

@@ -36,7 +36,7 @@ function(generateOsqueryEvents)
 
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/client/fieldpath.grpc.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/client/fieldpath.grpc.pb.cc
-    COMMAND ${PROTOC_PATH}/protoc -I ${CMAKE_CURRENT_SOURCE_DIR}/proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/client
+    COMMAND ${PROTOC_PATH}/protoc -I ${CMAKE_CURRENT_SOURCE_DIR}/proto --grpc_out=${CMAKE_CURRENT_SOURCE_DIR}/client
         --plugin=protoc-gen-grpc=${PROTOC_PATH}/grpc_cpp_plugin ${CMAKE_CURRENT_SOURCE_DIR}/proto/fieldpath.proto
   )
 

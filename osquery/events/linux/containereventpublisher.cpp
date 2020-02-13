@@ -43,6 +43,9 @@ Status ContainerEventPublisher::setUp() {
 
   // Initialize the grpc library
   grpc_init();
+
+  // create the async client for container
+  auto status = CreateAsyncAPIClient(rpc_client, container_socket);
   return Status::success();
 }
 

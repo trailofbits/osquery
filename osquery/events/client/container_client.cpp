@@ -6,11 +6,18 @@
 #include <osquery/flags.h>
 #include <osquery/logger.h>
 
+#include <osquery/events/client/events.grpc.pb.h>
+
 #include "client_interface.h"
+#include "base_request.h"
 #include "container_client.h"
 
 namespace osquery {
 
+using QueryEventRequest =
+    BaseRequest<::containerd::services::events::v1::Events,
+      ::containerd::services::events::v1::SubscribeRequest,
+      ::containerd::services::events::v1::Envelope>;
 
 struct AsyncAPIClient::PrivateData final {
   std::string address;
@@ -25,7 +32,9 @@ AsyncAPIClient::~AsyncAPIClient(void) {}
 
 IQueryEventRequestOutputRef AsyncAPIClient::SubscribeEvents(
     const containerd::services::events::v1::SubscribeRequest &subscribe_request) const {
-  return nullptr;
+  return QueryEventRequest::create(d->address,
+                                   &containerd::services::events::v1::Events::StubInterface::PrepareAsyncSubscribe,
+                                   subscribe_request);
 }
 
 Status CreateAsyncAPIClient(

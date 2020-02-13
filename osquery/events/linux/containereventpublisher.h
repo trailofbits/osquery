@@ -16,6 +16,8 @@
 
 #include <osquery/events.h>
 
+#include "../client/client_interface.h"
+
 namespace osquery {
 
 struct ContainerEventData final {
@@ -57,9 +59,12 @@ class ContainerEventPublisher final
   virtual ~ContainerEventPublisher() {
     tearDown();
   }
+
  private:
+
+  IAsyncAPIClientRef rpc_client;
+
   std::string socket_addr;
-  std::string url_events;
 };
 
 } // namespace osquery
