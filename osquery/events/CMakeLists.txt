@@ -124,6 +124,7 @@ function(generateOsqueryEvents)
       linux/socket_events.h
       linux/syslog.h
       linux/udev.h
+      client/client_interface.h
       client/events.pb.h 
       client/events.grpc.pb.h
       client/fieldpath.pb.h

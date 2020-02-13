@@ -14,6 +14,12 @@ importSourceSubmodule(
 
   SUBMODULES
     "src"
+    "src/third_party/abseil-cpp"
+    "src/third_party/benchmark"
+    "src/third_party/bloaty"
+    "src/third_party/cares/cares"
+    "src/third_party/protobuf"
+    "src/third_party/udpa"
 
   PATCH
     "src"

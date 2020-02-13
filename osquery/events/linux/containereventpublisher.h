@@ -16,7 +16,7 @@
 
 #include <osquery/events.h>
 
-#include "../client/client_interface.h"
+#include <osquery/events/client/client_interface.h>
 
 namespace osquery {
 
