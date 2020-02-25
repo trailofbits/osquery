@@ -234,7 +234,7 @@ function(importBoostInterfaceLibraries)
     "conversion:config"
     "xpressive:proto,fusion,conversion"
     "proto:config"
-    "beast:mp11,logic"
+    "beast:mp11,logic,align"
     "mp11:config"
     "unordered:config"
     "function_types:config"
@@ -284,6 +284,7 @@ function(importBoostInterfaceLibraries)
     "circular_buffer:config"
     "scope_exit:typeof,config"
     "typeof:config"
+    "align:config"
   )
 
   add_library(thirdparty_boost_config INTERFACE)

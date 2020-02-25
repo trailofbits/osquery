@@ -90,6 +90,7 @@ importSourceSubmodule(
     "src/libs/scope_exit"
     "src/libs/typeof"
     "src/libs/endian"
+    "/src/libs/align"
 
   PATCH
     "src/libs/process"

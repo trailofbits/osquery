@@ -1,0 +1,12 @@
+table_name("lxd_lifecycle_events")
+description("Track LXD lifecycle events.")
+schema([
+    Column("time", BIGINT, "Current unix epoch time"),
+    Column("timestamp", TEXT, "String representation of the message timestamp"),
+    Column("location", TEXT, "TODO"),
+    Column("action", TEXT, "Message level"),
+    Column("source", TEXT, "Message text"),
+    Column("context", TEXT, "Optional Message context data, in JSON format")
+])
+attributes(event_subscriber=True)
+implementation("lxd_lifecycle_events@LXDLifecycleEvent::genTable")

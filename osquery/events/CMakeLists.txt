@@ -24,6 +24,7 @@ function(generateOsqueryEvents)
       linux/inotify.cpp
       linux/syslog.cpp
       linux/udev.cpp
+      linux/lxdeventpublisher.cpp
     )
 
   elseif(DEFINED PLATFORM_MACOS)
@@ -90,6 +91,7 @@ function(generateOsqueryEvents)
       linux/socket_events.h
       linux/syslog.h
       linux/udev.h
+      linux/lxdeventpublisher.h
     )
 
   elseif(DEFINED PLATFORM_MACOS)
