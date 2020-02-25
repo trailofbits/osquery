@@ -1,0 +1,19 @@
+table_name("lxd_operation_events")
+description("Track LXD operation events.")
+schema([
+    Column("time", BIGINT, "Current unix epoch time"),
+    Column("timestamp", TEXT, "String representation of the message timestamp"),
+    Column("location", TEXT, "Event location"),
+    Column("id", TEXT, "UUID of the operation"),
+    Column("class", TEXT, "Class of the operation"),
+    Column("created_at", TEXT, "When the operation was created"),
+    Column("updated_at", TEXT, "Last time the operation was updated"),
+    Column("status", TEXT, "String version of the operation's status"),
+    Column("status_code", INTEGER, "Integer version of the operation's status"),
+    Column("resources", TEXT, "Dictionary of resource types and affected resources"),
+    Column("metadata", TEXT, "Metadata specific to the operation in question"),
+    Column("may_cancel", TEXT, "Whether the operation can be canceled"),
+    Column("error", TEXT, "The error string should the operation have failed")
+])
+attributes(event_subscriber=True)
+implementation("lxd_operation_events@LXDOperationEvent::genTable")

@@ -29,6 +29,7 @@ function(generateOsqueryTablesEventsEventstable)
       linux/syslog_events.cpp
       linux/user_events.cpp
       linux/containerd_events.cpp
+      linux/lxd_events.cpp
     )
 
   elseif(DEFINED PLATFORM_MACOS)
@@ -87,6 +88,7 @@ function(generateOsqueryTablesEventsEventstable)
       linux/process_file_events.h
       linux/selinux_events.h
       linux/socket_events.h
+      linux/lxd_events.h
     )
 
     generateIncludeNamespace(osquery_tables_events_eventstable "osquery/tables/events" "FULL_PATH" ${platform_public_header_files})

@@ -76,6 +76,7 @@ function(generateOsqueryEvents)
       linux/syslog.cpp
       linux/udev.cpp
       containerd/containerd_client.cpp
+      linux/lxdeventpublisher.cpp
     )
 
     foreach(proto_file_name ${containerd_proto_files})
@@ -152,6 +153,7 @@ function(generateOsqueryEvents)
       linux/syslog.h
       linux/udev.h
       containerd/client_interface.h
+      linux/lxdeventpublisher.h
     )
 
     target_include_directories(osquery_events PUBLIC
