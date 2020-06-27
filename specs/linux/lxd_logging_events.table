@@ -3,7 +3,7 @@ description("Track LXD logging events.")
 schema([
     Column("time", BIGINT, "Current unix epoch time"),
     Column("timestamp", TEXT, "String representation of the message timestamp"),
-    Column("location", TEXT, "TODO"),
+    Column("location", TEXT, "Location of the generation of API events"),
     Column("level", TEXT, "Message level"),
     Column("message", TEXT, "Message text"),
     Column("context", TEXT, "Optional Message context data, in JSON format"),
