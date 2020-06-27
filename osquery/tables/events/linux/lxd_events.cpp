@@ -13,6 +13,11 @@
 
 namespace osquery {
 
+static inline std::string default_context(void) {
+  std::string default_context = "";
+  return default_context;
+}
+
 REGISTER(LXDLoggingEventSubscriber, "event_subscriber", "lxd_logging_events");
 
 Status LXDLoggingEventSubscriber::init() {
@@ -32,7 +37,13 @@ Status LXDLoggingEventSubscriber::Callback(const ECRef& ec, const SCRef& sc) {
   r["location"] = logging_event.location_;
   r["level"] = logging_event.level_;
   r["message"] = logging_event.message_;
-  r["context"] = logging_event.context_;
+
+  if (logging_event.context_ != "{}") {
+    r["context"] = logging_event.context_;
+    deserializeRowJSON(logging_event.context_, r);
+  } else {
+    r["context"] = default_context();
+  }
 
   add(r);
 
@@ -60,7 +71,13 @@ Status LXDLifecycleEventSubscriber::Callback(const ECRef& ec, const SCRef& sc) {
   r["location"] = lifecycle_event.location_;
   r["action"] = lifecycle_event.action_;
   r["source"] = lifecycle_event.source_;
-  r["context"] = lifecycle_event.context_;
+
+  if (lifecycle_event.context_ != "{}") {
+    r["context"] = lifecycle_event.context_;
+    deserializeRowJSON(lifecycle_event.context_, r);
+  } else {
+    r["context"] = default_context();
+  }
 
   add(r);
 

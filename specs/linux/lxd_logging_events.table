@@ -6,7 +6,10 @@ schema([
     Column("location", TEXT, "TODO"),
     Column("level", TEXT, "Message level"),
     Column("message", TEXT, "Message text"),
-    Column("context", TEXT, "Optional Message context data, in JSON format")
+    Column("context", TEXT, "Optional Message context data, in JSON format"),
+    Column("ip", TEXT, "IP text associated with message context", additional=True),
+    Column("method", TEXT, "Method associated with message context", additional=True),
+    Column("url", TEXT, "URL associated with message context", additional=True)
 ])
 attributes(event_subscriber=True)
 implementation("lxd_logging_events@LXDLoggingEvent::genTable")
