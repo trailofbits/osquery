@@ -10,7 +10,7 @@ schema([
     Column("runtime", TEXT, "Backend runtime used by the container"),
     Column("runtime_root", TEXT, "Root directory used by the backend runtime"),
     Column("criu_path", TEXT, "Path to the criu binary used for checkpoint and restore of containers"),
-    Column("systemd_cgroup", INTEGER, "If systemd cgroup support is enabled"),
+    Column("systemd_cgroup", TEXT, "If systemd cgroup support is enabled"),
     Column("snapshot_key", TEXT, "Snapshot key used for the container's root filesystem"),
     Column("labels", TEXT, "Labels set to the container")
 ])

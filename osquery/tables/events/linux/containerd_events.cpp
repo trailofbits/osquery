@@ -73,7 +73,9 @@ Status ContainerdContainerEventSubscriber::Callback(const ECRef& ec,
   r["runtime"] = container_event.runtime_.runtime_;
   r["runtime_root"] = container_event.runtime_.runtime_root_;
   r["criu_path"] = container_event.runtime_.criu_path_;
-  r["systemd_cgroup"] = INTEGER(container_event.runtime_.systemd_cgroup_);
+  if (container_event.runtime_.systemd_cgroup_)
+    r["systemd_cgroup"] = std::to_string(container_event.runtime_.systemd_cgroup_);
+
   r["snapshot_key"] = container_event.snapshot_key_;
 
   std::string labels = labelsMapToString(container_event.labels_);
@@ -305,7 +307,10 @@ Status ContainerdTaskEventSubscriber::Callback(const ECRef& ec,
   r["io_stdin"] = task_event.io_.stdin_;
   r["io_stdout"] = task_event.io_.stdout_;
   r["io_stderr"] = task_event.io_.stderr_;
-  r["io_terminal"] = INTEGER(task_event.io_.terminal_);
+
+  if (task_event.io_.terminal_)
+    r["io_terminal"] = std::to_string(task_event.io_.terminal_);
+
   r["checkpoint"] = task_event.checkpoint_;
   r["pid"] = INTEGER(task_event.pid_);
   r["exit_status"] = INTEGER(task_event.exit_status_);
