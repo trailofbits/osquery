@@ -124,6 +124,9 @@ function(importLibraries)
     "Linux,Darwin,Windows:openssl"
     "Linux,Darwin,Windows:aws-sdk-cpp"
     "Linux,Darwin,Windows:icu"
+    "Linux:expat"
+    "Linux:dbus"
+    #"Linux:systemd"
   )
 
   foreach(library_descriptor ${library_descriptor_list})

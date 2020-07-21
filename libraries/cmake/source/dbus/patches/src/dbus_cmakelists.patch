@@ -1,0 +1,157 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index caef7384..1a4e7d35 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,6 +1,6 @@
+ # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
+-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
++list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
++list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+ 
+ # we do not need to have WIN32 defined
+ set(CMAKE_LEGACY_CYGWIN_WIN32 0)
+@@ -28,8 +28,8 @@ include(MacrosAutotools)
+ autoinit(configure.ac)
+ autoversion(dbus)
+ 
+-if(EXISTS ${CMAKE_SOURCE_DIR}/config.h.in)
+-    autoheaderchecks(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/cmake/ConfigureChecks.cmake ${CMAKE_SOURCE_DIR}/cmake/config.h.cmake)
++if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in)
++	autoheaderchecks(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ConfigureChecks.cmake ${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.cmake)
+ else()
+     message(STATUS "Generate config.h.in with autogen.sh to enable cmake header difference check.")
+ endif()
+@@ -79,7 +79,7 @@ set(DBUS_MACHINE_UUID_FILE   ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/dbus/machin
+ set(DBUS_BINDIR              ${CMAKE_INSTALL_FULL_BINDIR})
+ set(DBUS_DAEMONDIR           ${CMAKE_INSTALL_FULL_BINDIR})
+ set(DBUS_LOCALSTATEDIR       ${CMAKE_INSTALL_FULL_LOCALSTATEDIR})
+-set(DBUS_RUNSTATEDIR         ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/run)
++set(DBUS_RUNSTATEDIR         /var/run)
+ 
+ # On Windows this is relative to where we put the bus setup, in
+ # ${datadir}/dbus-1. For simplicity, we only do this if
+@@ -124,7 +124,7 @@ endif()
+ # search for required packages
+ if(WIN32)
+     # include local header first to avoid using old installed header
+-    set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/..)
++    set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+     include(Win32Macros)
+     addExplorerWrapper(${CMAKE_PROJECT_NAME})
+ endif()
+@@ -181,7 +181,7 @@ if(WIN32)
+     set(FD_SETSIZE "8192" CACHE STRING "The maximum number of connections that can be handled at once")
+ endif()
+ 
+-find_package(EXPAT)
++#find_package(EXPAT)
+ find_package(X11)
+ find_package(GLib2)
+ if(GLIB2_FOUND)
+@@ -195,7 +195,7 @@ add_definitions(-D_GNU_SOURCE)
+ include(ConfigureChecks)
+ 
+ # @TODO: how to remove last dir from ${CMAKE_SOURCE_DIR} ?
+-set(DBUS_SOURCE_DIR ${CMAKE_SOURCE_DIR}/..)
++set(DBUS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
+ 
+ # make some more macros available
+ include(MacroLibrary)
+@@ -329,16 +329,16 @@ enable_testing()
+ #########################################################################
+ 
+ ########### build output path definitions ###############
+-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
++set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+ if(WIN32 OR CYGWIN)
+-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
++	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+ else()
+-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
++	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+ endif()
+-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
++set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+ 
+ # for including config.h and for includes like <dir/foo.h>
+-include_directories(. ${CMAKE_BINARY_DIR} ${CMAKE_INCLUDE_PATH})
++include_directories(. ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_INCLUDE_PATH})
+ 
+ # linker search directories
+ link_directories(${DBUS_LIB_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} )
+@@ -541,10 +541,10 @@ if(DBUS_BUILD_TESTS)
+     # different, and it has no direct Autotools equivalent (Autotools
+     # tests automatically get their own ${builddir} as working directory).
+     set(DBUS_TEST_WORKING_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${IDE_BIN})
+-    set(DBUS_TEST_DATA ${Z_DRIVE_IF_WINE}${CMAKE_BINARY_DIR}/test/data)
++    set(DBUS_TEST_DATA ${Z_DRIVE_IF_WINE}${CMAKE_CURRENT_BINARY_DIR}/test/data)
+     set(DBUS_TEST_DAEMON ${Z_DRIVE_IF_WINE}${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${IDE_BIN}/dbus-daemon${EXEEXT})
+     set(DBUS_TEST_DBUS_LAUNCH ${Z_DRIVE_IF_WINE}${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${IDE_BIN}/dbus-launch${EXEEXT})
+-    set(DBUS_TEST_HOMEDIR ${Z_DRIVE_IF_WINE}${CMAKE_BINARY_DIR}/dbus)
++    set(DBUS_TEST_HOMEDIR ${Z_DRIVE_IF_WINE}${CMAKE_CURRENT_BINARY_DIR}/dbus)
+     set(DBUS_TEST_RUN_SESSION ${Z_DRIVE_IF_WINE}${CMAKE_RUNTIME_OUTPUT_DIRECTORY}${IDE_BIN}/dbus-run-session${EXEEXT})
+     set(TEST_LAUNCH_HELPER_BINARY ${Z_DRIVE_IF_WINE}${DBUS_TEST_EXEC}/dbus-daemon-launch-helper-for-tests${EXEEXT})
+     if(UNIX)
+@@ -565,8 +565,8 @@ set(DBUS_INTERNAL_CLIENT_DEFINITIONS "-DDBUS_COMPILATION")
+ configure_file(cmake/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h )
+ 
+ if(WIN32)
+-configure_file(cmake/dbus-env.bat.cmake ${CMAKE_BINARY_DIR}/bin/dbus-env.bat )
+-    install(FILES ${CMAKE_BINARY_DIR}/bin/dbus-env.bat DESTINATION ${CMAKE_INSTALL_BINDIR})
++	configure_file(cmake/dbus-env.bat.cmake ${CMAKE_CURRENT_BINARY_DIR}/bin/dbus-env.bat )
++	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/bin/dbus-env.bat DESTINATION ${CMAKE_INSTALL_BINDIR})
+ endif()
+ 
+ #
+@@ -574,14 +574,14 @@ endif()
+ #
+ set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/DBus1)
+ if(WIN32)
+-    configure_file(cmake/DBus1Config.cmake.in "${CMAKE_BINARY_DIR}/DBus1Config.cmake" @ONLY)
++	configure_file(cmake/DBus1Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/DBus1Config.cmake" @ONLY)
+ else()
+-    configure_file(cmake/DBus1Config.pkgconfig.in "${CMAKE_BINARY_DIR}/DBus1Config.cmake" @ONLY)
++	configure_file(cmake/DBus1Config.pkgconfig.in "${CMAKE_CURRENT_BINARY_DIR}/DBus1Config.cmake" @ONLY)
+ endif()
+-configure_file(cmake/DBus1ConfigVersion.cmake.in "${CMAKE_BINARY_DIR}/DBus1ConfigVersion.cmake" @ONLY)
++configure_file(cmake/DBus1ConfigVersion.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/DBus1ConfigVersion.cmake" @ONLY)
+ install(FILES
+-    "${CMAKE_BINARY_DIR}/DBus1Config.cmake"
+-    "${CMAKE_BINARY_DIR}/DBus1ConfigVersion.cmake"
++	"${CMAKE_CURRENT_BINARY_DIR}/DBus1Config.cmake"
++	"${CMAKE_CURRENT_BINARY_DIR}/DBus1ConfigVersion.cmake"
+     DESTINATION "${INSTALL_CMAKE_DIR}"
+ )
+@@ -716,7 +716,7 @@ include(CPackInstallConfig)
+ 
+ add_custom_target(help-options
+     cmake -LH
+-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
++    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+ )
+ 
+ #
+@@ -743,7 +743,7 @@ if(DBUS_ENABLE_PKGCONFIG)
+         set(datadir "\${prefix}/${CMAKE_INSTALL_DATADIR}")
+         set(datarootdir "\${prefix}/${CMAKE_INSTALL_DATADIR}")
+         set(dbus_daemondir "\${prefix}/${CMAKE_INSTALL_BINDIR}")
+-        configure_file(dbus-1.pc.in ${CMAKE_BINARY_DIR}/dbus-1.pc @ONLY)
+-        install(FILES ${CMAKE_BINARY_DIR}/dbus-1.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
++	configure_file(dbus-1.pc.in ${CMAKE_CURRENT_BINARY_DIR}/dbus-1.pc @ONLY)
++        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dbus-1.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+     endif()
+ endif()
+diff --git a/dbus/CMakeLists.txt b/dbus/CMakeLists.txt
+index 63070b69..51a3c84c 100644
+--- a/dbus/CMakeLists.txt
++++ b/dbus/CMakeLists.txt
+@@ -98,7 +98,7 @@ set(DBUS_LIB_HEADERS
+     dbus-transport-protected.h
+     dbus-uuidgen.h
+     dbus-watch.h
+-    ${CMAKE_BINARY_DIR}/config.h
++    ${CMAKE_CURRENT_BINARY_DIR}/../config.h
+ )
+ if(UNIX)
+     set(DBUS_LIB_HEADERS ${DBUS_LIB_HEADERS}

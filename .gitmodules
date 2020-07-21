@@ -124,3 +124,12 @@
 [submodule "libraries/cmake/source/augeas/gnulib/src"]
 	path = libraries/cmake/source/augeas/gnulib/src
 	url = https://github.com/osquery/third-party-gnulib
+[submodule "libraries/cmake/source/dbus/src"]
+	path = libraries/cmake/source/dbus/src
+	url = https://gitlab.freedesktop.org/dbus/dbus.git
+[submodule "libraries/cmake/source/expat/src"]
+	path = libraries/cmake/source/expat/src
+	url = https://github.com/libexpat/libexpat
+[submodule "libraries/cmake/source/systemd/src"]
+	path = libraries/cmake/source/systemd/src
+	url = https://github.com/systemd/systemd/

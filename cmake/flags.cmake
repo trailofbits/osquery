@@ -101,6 +101,8 @@ function(setupBuildFlags)
         OSQUERY_LINUX=1
         OSQUERY_BUILD_DISTRO=centos7
         OSQUERY_BUILD_PLATFORM=linux
+	_REENTRANT=1
+	__USE_REENTRANT=1
       )
 
       set(osquery_linux_common_link_options
@@ -111,7 +113,8 @@ function(setupBuildFlags)
       set(linux_cxx_link_options
         --no-undefined
         -lresolv
-        -pthread
+	#-pthread
+	-l:libpthread.so
       )
 
       set(linux_cxx_link_libraries
