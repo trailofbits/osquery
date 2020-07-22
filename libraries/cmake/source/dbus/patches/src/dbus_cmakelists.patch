@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index caef7384..1a4e7d35 100644
+index caef7384..65e07d2c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,6 +1,6 @@
@@ -123,6 +123,7 @@ index caef7384..1a4e7d35 100644
 +	"${CMAKE_CURRENT_BINARY_DIR}/DBus1ConfigVersion.cmake"
      DESTINATION "${INSTALL_CMAKE_DIR}"
  )
+ 
 @@ -716,7 +716,7 @@ include(CPackInstallConfig)
  
  add_custom_target(help-options
@@ -139,7 +140,7 @@ index caef7384..1a4e7d35 100644
 -        configure_file(dbus-1.pc.in ${CMAKE_BINARY_DIR}/dbus-1.pc @ONLY)
 -        install(FILES ${CMAKE_BINARY_DIR}/dbus-1.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 +	configure_file(dbus-1.pc.in ${CMAKE_CURRENT_BINARY_DIR}/dbus-1.pc @ONLY)
-+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dbus-1.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
++	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dbus-1.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
      endif()
  endif()
 diff --git a/dbus/CMakeLists.txt b/dbus/CMakeLists.txt

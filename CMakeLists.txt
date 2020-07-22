@@ -126,7 +126,6 @@ function(importLibraries)
     "Linux,Darwin,Windows:icu"
     "Linux:expat"
     "Linux:dbus"
-    #"Linux:systemd"
   )
 
   foreach(library_descriptor ${library_descriptor_list})

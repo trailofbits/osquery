@@ -130,6 +130,3 @@
 [submodule "libraries/cmake/source/expat/src"]
 	path = libraries/cmake/source/expat/src
 	url = https://github.com/libexpat/libexpat
-[submodule "libraries/cmake/source/systemd/src"]
-	path = libraries/cmake/source/systemd/src
-	url = https://github.com/systemd/systemd/
