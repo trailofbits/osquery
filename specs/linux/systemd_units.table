@@ -1,0 +1,10 @@
+table_name("systemd_units")
+description("Track systemd units.")
+schema([
+    Column("name", TEXT, "Name of unit"),
+    Column("type", TEXT, "Unit type"),
+    Column("load_state", TEXT, "Load state of the unit"),
+    Column("active_state", TEXT, "Activation state of the unit"),
+    Column("sub_state", TEXT, "Low level activation state of the unit"),
+])
+implementation("system/systemd_units@genSystemdUnits")

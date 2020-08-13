@@ -175,6 +175,7 @@ function(generateTestsIntegrationTablesTestsTest)
       socket_events.cpp
       startup_items.cpp
       syslog_events.cpp
+      systemd_units.cpp
       yara_events.cpp
     )
 

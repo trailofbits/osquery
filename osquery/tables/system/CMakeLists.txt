@@ -81,6 +81,7 @@ function(generateOsqueryTablesSystemSystemtable)
       linux/users.cpp
       linux/selinux_settings.cpp
       linux/apparmor_profiles.cpp
+      linux/systemd_units.cpp
     )
 
   elseif(DEFINED PLATFORM_MACOS)
@@ -298,6 +299,7 @@ function(generateOsqueryTablesSystemSystemtable)
       linux/md_tables.h
       linux/pci_devices.h
       linux/smbios_utils.h
+      #linux/dbus_utils.h
     )
 
   elseif(DEFINED PLATFORM_MACOS)

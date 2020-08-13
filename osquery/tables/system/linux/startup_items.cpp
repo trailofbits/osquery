@@ -91,7 +91,6 @@ int bus_iter_get_basic_and_next(DBusMessageIter* iter,
   }
 
   dbus_message_iter_get_basic(iter, data);
-
   if (dbus_message_iter_next(iter) != next) {
     return -1;
   }
@@ -103,7 +102,6 @@ void genSystemDItems(QueryData& results) {
   DBusConnection* c;
   DBusError error;
   DBusMessage *systemd_message = nullptr, *reply = nullptr;
-  dbus_error_init(&error);
   DBusMessageIter iter, sub, sub2;
 
   dbus_error_init(&error);
