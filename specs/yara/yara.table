@@ -2,7 +2,7 @@ table_name("yara")
 description("Track YARA matches for files or PIDs.")
 schema([
     Column("path", TEXT, "The path scanned",
-        index=True, required=True),
+        additional=True, required=True),
     Column("matches", TEXT, "List of YARA matches"),
     Column("count", INTEGER, "Number of YARA matches"),
     Column("sig_group", TEXT, "Signature group used",
@@ -11,6 +11,7 @@ schema([
         additional=True),
     Column("strings", TEXT, "Matching strings"),
     Column("tags", TEXT, "Matching tags"),
+    Column("pid", TEXT, "Pid of the process to scan", additional=True, required=True),
 ])
 implementation("yara@genYara")
 examples([

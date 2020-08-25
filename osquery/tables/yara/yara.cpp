@@ -18,6 +18,7 @@
 #include <osquery/core/tables.h>
 #include <osquery/filesystem/filesystem.h>
 #include <osquery/logger/logger.h>
+#include <osquery/utils/conversions/tryto.h>
 #include <osquery/utils/status/status.h>
 
 #include "osquery/tables/yara/yara_utils.h"
@@ -47,11 +48,11 @@ FLAG(uint32,
 
 namespace tables {
 
-void doYARAScan(YR_RULES* rules,
-                const std::string& path,
-                QueryData& results,
-                const std::string& group,
-                const std::string& sigfile) {
+void doYARAScanWithFile(YR_RULES* rules,
+                        const std::string& path,
+                        QueryData& results,
+                        const std::string& group,
+                        const std::string& sigfile) {
   Row r;
 
   // These are default values, to be updated in YARACallback.
@@ -71,6 +72,47 @@ void doYARAScan(YR_RULES* rules,
   if (result == ERROR_SUCCESS) {
     results.push_back(std::move(r));
   }
+}
+
+void doYARAScanWithPid(YR_RULES* rules,
+                       const std::string& pid_string,
+                       QueryData& results,
+                       const std::string& group,
+                       const std::string& sigfile) {
+  Row r;
+
+  // These are default values, to be updated in YARACallback.
+  r["count"] = INTEGER(0);
+  r["matches"] = std::string("");
+  r["strings"] = std::string("");
+  r["tags"] = std::string("");
+
+  // This could use target_path instead to be consistent with yara_events.
+  r["pid"] = pid_string;
+  r["sig_group"] = std::string(group);
+  r["sigfile"] = std::string(sigfile);
+
+  YR_SCANNER* scanner;
+  auto result = yr_scanner_create(rules, &scanner);
+
+  if (result != ERROR_SUCCESS) {
+    LOG(ERROR) << "Failed to create process scanner for Yara";
+    return;
+  }
+
+  yr_scanner_set_callback(scanner, YARACallback, (void*)&r);
+  yr_scanner_set_timeout(scanner, 0);
+  yr_scanner_set_flags(scanner, SCAN_FLAGS_FAST_MODE);
+
+  int pid = tryTo<int>(pid_string).takeOr(-1);
+
+  // Perform the scan, using the static YARA subscriber callback.
+  result = yr_scanner_scan_proc(scanner, pid);
+  if (result == ERROR_SUCCESS) {
+    results.push_back(std::move(r));
+  }
+
+  yr_scanner_destroy(scanner);
 }
 
 QueryData genYara(QueryContext& context) {
@@ -130,6 +172,11 @@ QueryData genYara(QueryContext& context) {
         return status;
       }));
 
+  auto pids = context.constraints["pid"].getAll(EQUALS);
+  if (pids.size() > 0 && paths.size() > 0) {
+    return results;
+  }
+
   // Compile all sigfiles into a map.
   for (const auto& file : sigfiles) {
     // Check if this "ad-hoc" signature file has not been used/compiled.
@@ -153,16 +200,31 @@ QueryData genYara(QueryContext& context) {
     groups.insert(file);
   }
 
-  // Scan every path pair.
-  for (const auto& path : paths) {
-    // Scan using the signature groups.
-    for (const auto& group : groups) {
-      if (rules.count(group) > 0) {
-        doYARAScan(rules[group], path.c_str(), results, group, group);
+  if (pids.size() > 0) {
+    for (auto pid : pids) {
+      // Scan using the signature groups.
+      for (const auto& group : groups) {
+        if (rules.count(group) > 0) {
+          doYARAScanWithPid(rules[group], pid, results, group, group);
 
-        // sleep between each file to help smooth out malloc spikes
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(FLAGS_yara_delay));
+          // sleep between each file to help smooth out malloc spikes
+          // std::this_thread::sleep_for(
+          //     std::chrono::milliseconds(FLAGS_yara_delay));
+        }
+      }
+    }
+  } else {
+    // Scan every path pair.
+    for (const auto& path : paths) {
+      // Scan using the signature groups.
+      for (const auto& group : groups) {
+        if (rules.count(group) > 0) {
+          doYARAScanWithFile(rules[group], path.c_str(), results, group, group);
+
+          // sleep between each file to help smooth out malloc spikes
+          std::this_thread::sleep_for(
+              std::chrono::milliseconds(FLAGS_yara_delay));
+        }
       }
     }
   }
