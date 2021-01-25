@@ -234,6 +234,7 @@ function(generateInstallDirectives)
     install(
       FILES "tools/deployment/linux_packaging/deb/osquery.initd"
       DESTINATION "/control/deb/etc/init.d"
+      RENAME "osqueryd"
 
       PERMISSIONS
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -242,8 +243,9 @@ function(generateInstallDirectives)
     )
 
     install(
-      FILES "tools/deployment/linux_packaging/deb/osquery.initd"
+      FILES "tools/deployment/linux_packaging/rpm/osquery.initd"
       DESTINATION "/control/rpm/etc/init.d"
+      RENAME "osqueryd"
 
       PERMISSIONS
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -316,27 +318,30 @@ function(generateInstallDirectives)
     install(
       FILES "tools/deployment/linux_packaging/osqueryd.sysconfig"
       DESTINATION "/control/deb/etc/default"
+      RENAME "osqueryd"
     )
 
     install(
       FILES "tools/deployment/linux_packaging/osqueryd.sysconfig"
       DESTINATION "/control/rpm/etc/sysconfig"
+      RENAME "osqueryd"
     )
 
     install(
-      DIRECTORY
-      DESTINATION "/etc/osquery"
+      FILES "LICENSE"
+      DESTINATION "/control"
+      RENAME "LICENSE.txt"
     )
 
   elseif(PLATFORM_WINDOWS)
     install(
       TARGETS osqueryd
-      DESTINATION "/data/osqueryd"
+      DESTINATION "osqueryd"
     )
 
     install(
       PROGRAMS "$<TARGET_FILE:osqueryd>"
-      DESTINATION "/data"
+      DESTINATION "."
       RENAME "osqueryi.exe"
     )
 
@@ -353,8 +358,8 @@ function(generateInstallDirectives)
 
     install(
       FILES "LICENSE"
-      DESTINATION "/control/msi"
-      RENAME "wix_license.txt"
+      DESTINATION "/control"
+      RENAME "LICENSE.txt"
     )
 
     install(
@@ -364,28 +369,28 @@ function(generateInstallDirectives)
     
     install(
       FILES "tools/deployment/osquery.example.conf"
-      DESTINATION "/data"
+      DESTINATION "."
       RENAME "osquery.conf"
     )
 
     install(
       FILES "tools/wel/osquery.man"
-      DESTINATION "/data"
+      DESTINATION "."
     )
 
     install(
       FILES "tools/deployment/windows_packaging/manage-osqueryd.ps1"
-      DESTINATION "/data"
+      DESTINATION "."
     )
 
     install(
       FILES "tools/deployment/windows_packaging/osquery_utils.ps1"
-      DESTINATION "/data"
+      DESTINATION "."
     )
 
     install(
       FILES "tools/deployment/windows_packaging/osquery.flags"
-      DESTINATION "/data"
+      DESTINATION "."
     )
 
     install(
@@ -410,18 +415,26 @@ function(generateInstallDirectives)
 
     install(
       FILES "tools/deployment/certs.pem"
-      DESTINATION "/data/certs"
+      DESTINATION "certs"
     )
 
     install(
       DIRECTORY
-      DESTINATION "/data/log"
+      DESTINATION "log"
     )
 
   elseif(PLATFORM_MACOS)
     install(
-      FILES "tools/deployment/macos_packaging/pkg/productbuild.sh"
-      DESTINATION "/control/pkg"
+      FILES
+        "tools/deployment/macos_packaging/pkg/productbuild.sh"
+
+      DESTINATION
+        "/control/pkg"
+
+      PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ             GROUP_EXECUTE
+        WORLD_READ             WORLD_EXECUTE
     )
 
     install(
@@ -480,7 +493,7 @@ function(generateInstallDirectives)
 
     install(
       FILES "LICENSE"
-      DESTINATION "/control/pkg"
+      DESTINATION "/control"
       RENAME "LICENSE.txt"
     )
 
