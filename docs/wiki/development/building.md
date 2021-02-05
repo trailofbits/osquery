@@ -302,6 +302,7 @@ mkdir package_data
 export DESTDIR=$(pwd)/package_data  # on Windows: `set DESTDIR=path` or `$Env:DESTDIR=path` for PowerShell
 cmake --build . --target install    # on Windows: add --config Release
 ```
+
 The newly created folder will include several components:
 
 - The executables: `osqueryd`, `osqueryi`
@@ -326,6 +327,7 @@ export OSQUERY_VERSION=$(git describe --tags --always)
 ```
 
 **Windows**
+
 ```batch
 cd osquery_source_folder
 
@@ -343,13 +345,16 @@ git clone https://github.com/osquery/osquery-packaging
 mkdir build
 cd build
 ```
+
 Common input parameters
+
  - **OSQUERY_VERSION**: can be customized, but we usually use the output of `git describe --always`
  - **OSQUERY_DATA_PATH**: Where the package data has been installed
 
 ### Creating the Linux packages
 
 Linux-specific parameters:
+
  - **CPACK_GENERATOR**: Either `DEB`, `RPM` or `TGZ`
  - **OSQUERY_SOURCE_DIRECTORY_LIST**: An optional list of paths, populated when creating the debuginfo and dbgsym packages for DEB/RPM. Pass the source and the build folders of osquery if you want to generate them.
 
@@ -369,6 +374,7 @@ cmake --build . --target package
 ### Creating the Windows packages
 
 Windows-specific parameters:
+
  - **CPACK_GENERATOR**: Either `WIX` or `NuGet`
  - **OSQUERY_BITNESS**: Either 32 or 64, depending on which architecture has been built
 
@@ -386,9 +392,11 @@ cmake -DCMAKE_BUILD_TYPE=Release ^
 
 cmake --build . --config Release --target package
 ```
+
 ### Creating the macOS packages
 
 macOS-specific parameters:
+
  - **CPACK_GENERATOR**: Either `productbuild` (PKG  files) or `TGZ`
 
 ```sh
