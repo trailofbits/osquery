@@ -1,9 +1,10 @@
-# YARA-based scanning with osquery
+# YARA-based Scanning with osquery
 
 There are two YARA-related tables in osquery, which serve very different purposes. The first table, called
 `yara_events`, uses osquery's [Events framework](../development/pubsub-framework.md) to monitor for filesystem changes
-and will execute YARA when a file change event fires. The second table, just called `yara`, is a table for performing an
-on-demand YARA scan.
+and will execute YARA when a file change event fires. Specifically, on macOS it uses `FSEvents` and on Linux it uses
+`inotify` events. The second table, just called `yara`, is a table for performing an on-demand YARA scan of a file or
+group of files.
 
 In this document, "signature file" is intended to be synonymous with "YARA rule file" (plain-text files commonly
 distributed with a `.yar` or `.yara` filename extension, although any extension is allowed).
@@ -146,7 +147,7 @@ osquery> SELECT * FROM yara_events;
 
 As you can see, even though no matches were found, a row is still created and stored.
 
-## On-demand YARA scanning
+## On-demand YARA Scanning
 
 The [`yara`](https://osquery.io/schema/current/#yara) table is used for on-demand scanning. With this table
 you can arbitrarily YARA scan any available file on the filesystem with any available signature files or
@@ -254,7 +255,7 @@ column, as a protection, the `strings` column will default to returning empty un
 
 ## Troubleshooting
 
-### YARA compile error
+### YARA Compile Error
 
 Before a YARA scan is performed, the YARA engine compiles the rule(s). An error here indicates there is probably an
 issue with the YARA rule(s), but, the first thing to check is whether the same rule can be run with the YARA
@@ -262,7 +263,7 @@ command-line utility: `yara64.exe myYaraRule.yar fileToScan.foo`. You will be ab
 about the compile error. If, however, this actually works as intended, then perhaps you've found a bug! Please let
 the osquery team know, on Slack or by opening an issue on GitHub.
 
-### Error loading YARA rules: 8
+### Error Loading YARA Rules: 8
 
 At this time, osquery only supports loading _plaintext_ YARA rules/signatures, which it compiles itself at runtime. If
 these rules have already been compiled into their binary form (_e.g._ with the `yarac` CLI tool), osquery will
