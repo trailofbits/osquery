@@ -37,6 +37,10 @@ else()
   message(FATAL_ERROR "Unsupported architecture ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
+if("arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+  set(TARGET_PROCESSOR "aarch64")
+endif()
+
 # TODO(alessandro): Add missing defines: PLATFORM_FREEBSD
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
   set(PLATFORM_POSIX 1)

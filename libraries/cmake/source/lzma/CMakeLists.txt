@@ -84,13 +84,14 @@ function(lzmaMain)
 
   target_compile_definitions(thirdparty_lzma PRIVATE
     HAVE_CONFIG_H
-    TUKLIB_GETTEXT=0
-    LZMADEC
+    TUKLIB_SYMBOL_PREFIX=lzma_
   )
 
-  target_compile_definitions(thirdparty_lzma PUBLIC
-    LZMA_API_STATIC
-  )
+  if(DEFINED PLATFORM_WINDOWS)
+    target_compile_definitions(thirdparty_lzma PUBLIC
+      LZMA_API_STATIC
+    )
+  endif()
 
   target_link_libraries(thirdparty_lzma PRIVATE
     thirdparty_c_settings
@@ -121,7 +122,7 @@ function(lzmaMain)
     )
   elseif(DEFINED PLATFORM_WINDOWS)
     target_include_directories(thirdparty_lzma PRIVATE
-      "${library_root}/windows"
+      "${CMAKE_CURRENT_SOURCE_DIR}/config/${TARGET_PROCESSOR}/windows"
     )
   endif()
 
