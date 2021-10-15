@@ -1,0 +1,111 @@
+# Linux
+
+## x86_64
+
+```bash
+cat /etc/issue
+CentOS release 6.10 (Final)
+Kernel \r on an \m
+```
+
+```bash
+ldd --version
+ldd (GNU libc) 2.12.2
+```
+
+```bash
+yum info glibc
+
+...
+
+Version     : 2.12
+Release     : 1.212.el6
+
+...
+
+```
+
+## AArch64
+
+```bash
+cat /etc/issue
+Ubuntu 16.04.7 LTS \n \l
+```
+
+```bash
+ldd --version
+ldd (Ubuntu GLIBC 2.23-0ubuntu11.2) 2.23
+```
+
+```bash
+apt show libc-bin
+Package: libc-bin
+Version: 2.23-0ubuntu11.3
+...
+
+```
+
+## Common
+
+Prepare the environment
+
+```bash
+export PATH="/opt/osquery-toolchain/usr/bin:${PATH}"
+export CFLAGS="--sysroot /opt/osquery-toolchain"
+export CXXFLAGS="${CFLAGS}"
+export CPPFLAGS="${CFLAGS}"
+export LDFLAGS="${CFLAGS}"
+export CC=clang
+```
+
+Force the makefile to use clang instead of gcc
+
+```
+sed 's/gcc/clang/g' -i Make.Rules
+```
+
+Fix the `FATAL: kernel too old` issue in the toolchain:
+
+```bash
+ln \
+  -sf \
+  /opt/osquery-toolchain/usr/bin/llvm-ar \
+  /opt/osquery-toolchain/usr/bin/ar
+
+ln \
+  -sf \
+  /opt/osquery-toolchain/usr/bin/llvm-ranlib \
+  /opt/osquery-toolchain/usr/bin/ranlib
+
+ln \
+  -sf \
+  /opt/osquery-toolchain/usr/bin/llvm-as \
+  /opt/osquery-toolchain/usr/bin/as
+
+ln \
+  -sf \
+  /opt/osquery-toolchain/usr/bin/llvm-objcopy \
+  /opt/osquery-toolchain/usr/bin/objcopy
+```
+
+In case you are using `llvm-as`, you will have to wrap it so that it can correctly ignore the `-Qy` parameter (standard `as` does the same).
+
+Place this script in a folder, then mark it executable and add it at the start of your PATH variable:
+
+```
+#!/usr/bin/env bash
+
+/opt/osquery-toolchain/usr/bin/llvm-as $(echo $@ | sed 's/-Qy//g')
+exit $?
+```
+
+Build the library
+
+```
+PAM_CAP=no make -j $(nproc)
+```
+
+Copy the generated augeas files:
+
+ - `libcap/cap_names.h`
+ - `libcap/cap_names.list.h`
