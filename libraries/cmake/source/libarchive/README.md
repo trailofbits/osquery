@@ -1,37 +1,146 @@
-# libarchive
+# Linux/macOS
 
-## Linux
+## Linux x86_64
 
-Using Ubuntu 14.04 (glibc 2.12)
+```bash
+cat /etc/issue
+CentOS release 6.10 (Final)
+Kernel \r on an \m
+```
 
-```sh
+```bash
 ldd --version
 ldd (GNU libc) 2.12.2
 ```
 
-Generated with the following commands:
+```bash
+yum info glibc
 
-```sh
-export OPENSSL_INCLUDE=../../../../../build/openssl/openssl-prefix/src/openssl/include
-export OPENSSL_LINK=../../../../../build/openssl/openssl-prefix/src/openssl
-export PATH=/usr/local/osquery-toolchain/usr/bin:$PATH
-export CFLAGS="--sysroot /usr/local/osquery-toolchain -I$OPENSSL_INCLUDE"
-export CXXFLAGS="${CFLAGS}"
-export LDFLAGS="${CFLAGS} -L$OPENSSL_LINK"
-export CC=clang
-export CXX=clang++
+...
 
-autoreconf -f -i
-./configure --enable-static --without-lzo2 --without-nettle --without-xml2 --with-openssl --with-expat --enable-static
+Version     : 2.12
+Release     : 1.212.el6
+
+...
+
 ```
 
-Then copy
+## Linux Arch64
 
-```sh
-cp ./config.h ../config/linux/config.h
+```bash
+cat /etc/issue
+Ubuntu 16.04.7 LTS \n \l
 ```
 
-Then turn on the following defines
+```bash
+ldd --version
+ldd (Ubuntu GLIBC 2.23-0ubuntu11.2) 2.23
+```
+
+```bash
+apt show libc-bin
+Package: libc-bin
+Version: 2.23-0ubuntu11.3
+...
+
+```
+
+## Common
+
+Linux: integrate the osquery-toolchain, using the following file as a starting point: `cmake/toolchain.cmake`. Pass the toolchain like this: `-DOSQUERY_TOOLCHAIN_SYSROOT=/usr/local/osquery-toolchain`
+
+macOS:
+ * x86_64: `-DCMAKE_OSX_SYSROOT=/Applications/Xcode_13.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12 -DCMAKE_OSX_ARCHITECTURES=x86_64`
+ * M1: `-DCMAKE_OSX_SYSROOT=/Applications/Xcode_13.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCMAKE_OSX_ARCHITECTURES=arm64`
+
+```sh
+cmake \
+  -S src \
+  -B b \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DENABLE_BZip2=ON \
+  -DUSE_BZIP2_STATIC=ON \
+  -DENABLE_LIBXML2=ON \
+  -DLIBXML_STATIC=ON \
+  -DENABLE_LZMA=ON \
+  -DHAVE_LZMA_STREAM_ENCODER_MT=ON \
+  -DENABLE_OPENSSL=ON \
+  -DENABLE_ZLIB=ON \
+  -DENABLE_ZSTD=ON \
+  -DHAVE_LIBZSTD=ON \
+  -DENABLE_ACL=OFF \
+  -DENABLE_CAT=OFF \
+  -DENABLE_CAT_SHARED=OFF \
+  -DENABLE_CNG=OFF \
+  -DENABLE_COVERAGE=OFF \
+  -DENABLE_CPIO=OFF \
+  -DENABLE_CPIO_SHARED=OFF \
+  -DENABLE_EXPAT=OFF \
+  -DENABLE_ICONV=OFF \
+  -DENABLE_INSTALL=OFF \
+  -DENABLE_LIBB2=OFF \
+  -DENABLE_LZ4=OFF \
+  -DENABLE_LZO=OFF \
+  -DENABLE_LibGCC=OFF \
+  -DENABLE_MBEDTLS=OFF \
+  -DENABLE_NETTLE=OFF \
+  -DENABLE_PCREPOSIX=OFF \
+  -DENABLE_SAFESEH=AUTO \
+  -DENABLE_TAR=OFF \
+  -DENABLE_TAR_SHARED=OFF \
+  -DENABLE_TEST=OFF \
+  -DENABLE_WERROR=OFF \
+  -DENABLE_XATTR=OFF
+```
+
+## Windows
+
+```sh
+cmake ^
+  -S src ^
+  -B b ^
+  -DBUILD_TESTING=OFF ^
+  -DBUILD_SHARED_LIBS=OFF ^
+  -DCMAKE_BUILD_TYPE=Release ^
+  -DENABLE_BZip2=ON ^
+  -DUSE_BZIP2_STATIC=ON ^
+  -DENABLE_LIBXML2=ON ^
+  -DLIBXML_STATIC=ON ^
+  -DENABLE_LZMA=ON ^
+  -DHAVE_LZMA_STREAM_ENCODER_MT=ON ^
+  -DENABLE_OPENSSL=ON ^
+  -DENABLE_ZLIB=ON ^
+  -DENABLE_ZSTD=ON ^
+  -DHAVE_LIBZSTD=ON ^
+  -DENABLE_ACL=OFF ^
+  -DENABLE_CAT=OFF ^
+  -DENABLE_CAT_SHARED=OFF ^
+  -DENABLE_CNG=OFF ^
+  -DENABLE_COVERAGE=OFF ^
+  -DENABLE_CPIO=OFF ^
+  -DENABLE_CPIO_SHARED=OFF ^
+  -DENABLE_EXPAT=OFF ^
+  -DENABLE_ICONV=OFF ^
+  -DENABLE_INSTALL=OFF ^
+  -DENABLE_LIBB2=OFF ^
+  -DENABLE_LZ4=OFF ^
+  -DENABLE_LZO=OFF ^
+  -DENABLE_LibGCC=OFF ^
+  -DENABLE_MBEDTLS=OFF ^
+  -DENABLE_NETTLE=OFF ^
+  -DENABLE_PCREPOSIX=OFF ^
+  -DENABLE_SAFESEH=AUTO ^
+  -DENABLE_TAR=OFF ^
+  -DENABLE_TAR_SHARED=OFF ^
+  -DENABLE_TEST=OFF ^
+  -DENABLE_WERROR=OFF ^
+  -DENABLE_XATTR=OFF
+```
+
+# Common
+Make sure the following config options are enabled:
 
 - `HAVE_LIBLZMA`
 - `HAVE_LZMA_H`
