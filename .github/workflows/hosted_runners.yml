@@ -696,7 +696,6 @@ jobs:
         ctest --build-nocmake -V
 
     - name: Run the install target
-      if: matrix.architecture == 'x86_64'
       working-directory: ${{ steps.build_paths.outputs.BINARY }}
 
       env:
@@ -710,7 +709,7 @@ jobs:
           -j ${{ steps.build_job_count.outputs.VALUE }}
 
     - name: Create the packages
-      if: matrix.build_type == 'Release' && matrix.architecture == 'x86_64'
+      if: matrix.build_type == 'Release'
       working-directory: ${{ steps.build_paths.outputs.PACKAGE_BUILD }}
 
       shell: bash
@@ -736,7 +735,7 @@ jobs:
         done
 
     - name: Locate the packages
-      if: matrix.build_type == 'Release' && matrix.architecture == 'x86_64'
+      if: matrix.build_type == 'Release'
       id: packages
       shell: bash
       run: |
@@ -745,24 +744,24 @@ jobs:
         echo ::set-output name=REL_UNSIGNED_RELEASE_TGZ_PATH::$(ls ${{ steps.build_paths.outputs.REL_PACKAGE_BUILD }}/*.tar.gz | grep -v package_data)
 
     - name: Store the unsigned release package data artifact
-      if: matrix.build_type == 'Release' && matrix.architecture == 'x86_64'
+      if: matrix.build_type == 'Release'
       uses: actions/upload-artifact@v1
       with:
-        name: macos_unsigned_release_package_data
+        name: macos_unsigned_release_package_data_${{ matrix.architecture }}
         path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_PACKAGE_DATA_PATH }}
 
     - name: Store the unsigned release PKG artifact
-      if: matrix.build_type == 'Release' && matrix.architecture == 'x86_64'
+      if: matrix.build_type == 'Release'
       uses: actions/upload-artifact@v1
       with:
-        name: macos_unsigned_release_pkg
+        name: macos_unsigned_release_pkg_${{ matrix.architecture }}
         path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_PKG_PATH }}
 
     - name: Store the unsigned release TGZ artifact
-      if: matrix.build_type == 'Release' && matrix.architecture == 'x86_64'
+      if: matrix.build_type == 'Release'
       uses: actions/upload-artifact@v1
       with:
-        name: macos_unsigned_release_tgz
+        name: macos_unsigned_release_tgz_${{ matrix.architecture }}
         path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_TGZ_PATH }}
 
     # Before we terminate this job, delete the build folder. The cache
