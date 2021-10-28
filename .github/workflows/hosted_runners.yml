@@ -690,54 +690,27 @@ jobs:
           --target install \
           -j ${{ steps.build_job_count.outputs.VALUE }}
 
-<<<<<<< HEAD:.github/workflows/hosted_runners.yml
     - name: Create the package data
-=======
-    - name: Create the packages
-      if: matrix.build_type == 'Release'
->>>>>>> 2d05df3df (ci: Upload the macOS M1 artifacts):.github/workflows/build_x86.yml
       working-directory: ${{ steps.build_paths.outputs.PACKAGE_BUILD }}
       run: |
         tar pcvzf package_data.tar.gz \
           -C ${{ steps.build_paths.outputs.PACKAGE_DATA }} \
           .
 
-<<<<<<< HEAD:.github/workflows/hosted_runners.yml
     - name: Locate the package data
-=======
-        package_format_list=( "productbuild" "TGZ" )
-
-        for package_format in "${package_format_list[@]}" ; do
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DCPACK_GENERATOR=${package_format} \
-            -DOSQUERY_PACKAGE_VERSION=${osquery_version} \
-            -DOSQUERY_DATA_PATH=${{ steps.build_paths.outputs.PACKAGE_DATA }} \
-            ${{ steps.build_paths.outputs.PACKAGING }}
-
-          cmake --build . \
-            --target package
-        done
-
-    - name: Locate the packages
->>>>>>> 2d05df3df (ci: Upload the macOS M1 artifacts):.github/workflows/build_x86.yml
       if: matrix.build_type == 'Release'
       id: packages
       shell: bash
       run: |
         echo ::set-output name=REL_UNSIGNED_RELEASE_PACKAGE_DATA_PATH::$(ls ${{ steps.build_paths.outputs.REL_PACKAGE_BUILD }}/package_data.tar.gz)
 
-<<<<<<< HEAD:.github/workflows/hosted_runners.yml
     - name: Store the ${{ matrix.architecture }} unsigned release package data artifact
-=======
-    - name: Store the unsigned release package data artifact
->>>>>>> 2d05df3df (ci: Upload the macOS M1 artifacts):.github/workflows/build_x86.yml
       if: matrix.build_type == 'Release'
       uses: actions/upload-artifact@v1
       with:
         name: macos_unsigned_release_package_data_${{ matrix.architecture }}
         path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_PACKAGE_DATA_PATH }}
 
-<<<<<<< HEAD:.github/workflows/hosted_runners.yml
     - name: Package the tests for the x86_64 macOS-10.15 worker
       if: matrix.architecture == 'x86_64'
       run: |
@@ -749,21 +722,6 @@ jobs:
       with:
         name: macos_tests_${{ matrix.build_type }}
         path: workspace/macos_tests_${{ matrix.build_type }}.tar.gz
-=======
-    - name: Store the unsigned release PKG artifact
-      if: matrix.build_type == 'Release'
-      uses: actions/upload-artifact@v1
-      with:
-        name: macos_unsigned_release_pkg_${{ matrix.architecture }}
-        path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_PKG_PATH }}
-
-    - name: Store the unsigned release TGZ artifact
-      if: matrix.build_type == 'Release'
-      uses: actions/upload-artifact@v1
-      with:
-        name: macos_unsigned_release_tgz_${{ matrix.architecture }}
-        path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_TGZ_PATH }}
->>>>>>> 2d05df3df (ci: Upload the macOS M1 artifacts):.github/workflows/build_x86.yml
 
     # Before we terminate this job, delete the build folder. The cache
     # actions will require the disk space to create the archives.
