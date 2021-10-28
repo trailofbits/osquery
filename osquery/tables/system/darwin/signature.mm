@@ -29,7 +29,8 @@ namespace osquery {
 namespace tables {
 
 // Empty string runs default verification on a file
-std::set<std::string> kCheckedArches{"", "i386", "ppc", "arm", "x86_64"};
+std::set<std::string> kCheckedArches{
+    "", "i386", "ppc", "arm", "x86_64", "arm64"};
 
 int getOSMinorVersion() {
   auto qd = SQL::selectAllFrom("os_version");
