@@ -135,6 +135,13 @@ function(generateOsqueryTablesSystemDarwinTests)
     tests_helper
     thirdparty_googletest
   )
+
+  add_executable(unsigned_test darwin/unsigned_test.cpp)
+  add_custom_command(
+    TARGET unsigned_test
+    POST_BUILD
+    COMMAND codesign --remove-signature --deep $<TARGET_FILE:unsigned_test>
+  )
 endfunction()
 
 function(generateOsqueryTablesSystemWindowsTests)

@@ -44,10 +44,13 @@ std::string getExecutablePath() {
   }
 }
 
-// Get the full, real path to the current executable (only works on Darwin).
-std::string getRealExecutablePath() {
-  auto path = getExecutablePath();
-  return fs::canonical(path).string();
+// Get the full, real path to the unsigned test executable (only works on
+// Darwin).
+std::string getUnsignedExecutablePath() {
+  auto exe = getExecutablePath();
+  auto path = fs::canonical(exe);
+  path.remove_filename() /= "unsigned_test";
+  return path.string();
 }
 
 class SignatureTest : public testing::Test {
@@ -107,7 +110,7 @@ TEST_F(SignatureTest, test_get_valid_signature) {
  * relying on a particular binary to be present.
  */
 TEST_F(SignatureTest, test_get_unsigned) {
-  std::string path = getRealExecutablePath();
+  std::string path = getUnsignedExecutablePath();
 
   QueryData results;
   genSignatureForFile(path, true, results);
@@ -129,8 +132,8 @@ TEST_F(SignatureTest, test_get_unsigned) {
  * Ensures that the results for a signed but invalid binary are correct.
  *
  * This test is a bit of a hack - we copy an existing signed binary (/bin/ls,
- * like above), and then modify one byte in the middle of the file by XORing it
- * with 0xBA.  This should ensure that it differs from whatever the original
+ * like above), and then modify three bytes in the middle of the file by XORing
+ * it with 0xBA.  This should ensure that it differs from whatever the original
  * byte was, and should thus invalidate the signature.
  */
 TEST_F(SignatureTest, test_get_invalid_signature) {
@@ -151,9 +154,12 @@ TEST_F(SignatureTest, test_get_invalid_signature) {
   fclose(f);
   ASSERT_EQ(nread, binary.size());
 
-  // Actually modify a byte.
-  size_t offset = binary.size() / 2;
+  // Actually modify a 3 bytes, hopefully covering multiple architecture
+  // sections.
+  size_t offset = binary.size() / 4;
   binary[offset] = binary[offset] ^ 0xBA;
+  binary[offset] = binary[offset * 2] ^ 0xBA;
+  binary[offset] = binary[offset * 3] ^ 0xBA;
 
   // Write it back to a file.
   f = fopen(newPath.c_str(), "wb");
