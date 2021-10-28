@@ -128,13 +128,43 @@ TEST_F(SignatureTest, test_get_unsigned) {
   }
 }
 
+/**
+ * Invalidate a universal binary's signature by modifying one byte in each
+ * architecture section.
+ */
+void invalidateUniversalBinarySignature(std::vector<uint8_t>& binary) {
+  uint32_t sliceCount;
+  uint32_t offset;
+  uint32_t sliceSize;
+
+  // offset 4 = uint32 number of architecture slices
+  sliceCount = CFSwapInt32BigToHost(*(uint32_t*)&binary[4]);
+
+  // offset 8 = uint32 start of first slice header
+  uint32_t sliceHeader = 8;
+  for (uint32_t i = 0; i < sliceCount; ++i) {
+    // slice header offset 8 = offset to slice data
+    offset = CFSwapInt32BigToHost(*(uint32_t*)&binary[sliceHeader + 8]);
+    // slice header offset 12 = size of slice data, in bytes
+    sliceSize = CFSwapInt32BigToHost(*(uint32_t*)&binary[sliceHeader + 12]);
+
+    // slice headers are 20 bytes in length, go to the next slice header
+    sliceHeader += 20;
+    if (offset && sliceSize) {
+      // Modify the middle most byte in the architecture slice
+      uint32_t target = offset + (sliceSize / 2);
+      binary[target] = ~binary[target];
+    }
+  }
+}
+
 /*
  * Ensures that the results for a signed but invalid binary are correct.
  *
  * This test is a bit of a hack - we copy an existing signed binary (/bin/ls,
- * like above), and then modify three bytes in the middle of the file by XORing
- * it with 0xBA.  This should ensure that it differs from whatever the original
- * byte was, and should thus invalidate the signature.
+ * like above), and then modify one byte in each architecture slice. This should
+ * ensure that it differs from whatever the original byte was, and should thus
+ * invalidate the signature for the slice.
  */
 TEST_F(SignatureTest, test_get_invalid_signature) {
   std::string originalPath = "/bin/ls";
@@ -154,12 +184,7 @@ TEST_F(SignatureTest, test_get_invalid_signature) {
   fclose(f);
   ASSERT_EQ(nread, binary.size());
 
-  // Actually modify a 3 bytes, hopefully covering multiple architecture
-  // sections.
-  size_t offset = binary.size() / 4;
-  binary[offset] = binary[offset] ^ 0xBA;
-  binary[offset] = binary[offset * 2] ^ 0xBA;
-  binary[offset] = binary[offset * 3] ^ 0xBA;
+  invalidateUniversalBinarySignature(binary);
 
   // Write it back to a file.
   f = fopen(newPath.c_str(), "wb");
