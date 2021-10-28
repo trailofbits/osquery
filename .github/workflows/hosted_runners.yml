@@ -505,6 +505,10 @@ jobs:
         architecture: [x86_64, arm64]
         os: [macos-11]
 
+        exclude:
+          - build_type: Debug
+            architecture: arm64
+
     steps:
     - name: Select the build job count
       shell: bash
@@ -596,7 +600,12 @@ jobs:
 
     - name: Install build dependencies
       run: |
-        brew install ccache flex bison
+        brew install \
+          ccache \
+          flex \
+          bison \
+          coreutils \
+          gnu-sed
 
     - name: Install tests dependencies
       run: |
@@ -743,32 +752,107 @@ jobs:
         echo ::set-output name=REL_UNSIGNED_RELEASE_PKG_PATH::$(ls ${{ steps.build_paths.outputs.REL_PACKAGE_BUILD }}/*.pkg)
         echo ::set-output name=REL_UNSIGNED_RELEASE_TGZ_PATH::$(ls ${{ steps.build_paths.outputs.REL_PACKAGE_BUILD }}/*.tar.gz | grep -v package_data)
 
-    - name: Store the unsigned release package data artifact
+    - name: Store the ${{ matrix.architecture }} unsigned release package data artifact
       if: matrix.build_type == 'Release'
       uses: actions/upload-artifact@v1
       with:
         name: macos_unsigned_release_package_data_${{ matrix.architecture }}
         path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_PACKAGE_DATA_PATH }}
 
-    - name: Store the unsigned release PKG artifact
-      if: matrix.build_type == 'Release'
+    - name: Store the x86_64 unsigned release PKG artifact
+      if: matrix.build_type == 'Release' && matrix.architecture == 'x86_64'
       uses: actions/upload-artifact@v1
       with:
         name: macos_unsigned_release_pkg_${{ matrix.architecture }}
         path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_PKG_PATH }}
 
-    - name: Store the unsigned release TGZ artifact
-      if: matrix.build_type == 'Release'
+    - name: Store the x86_64 unsigned release TGZ artifact
+      if: matrix.build_type == 'Release' && matrix.architecture == 'x86_64'
       uses: actions/upload-artifact@v1
       with:
         name: macos_unsigned_release_tgz_${{ matrix.architecture }}
         path: ${{ steps.packages.outputs.REL_UNSIGNED_RELEASE_TGZ_PATH }}
+
+    - name: Package the tests for the x86_64 macOS-10.15 worker
+      if: matrix.build_type == 'Debug' && matrix.architecture == 'x86_64'
+      run: |
+        ( cd workspace && ${{ steps.build_paths.outputs.SOURCE }}/tools/ci/scripts/package_tests.sh build macos_tests )
+
+    - name: Store the packaged tests for the x86_64 macOS-10.15 worker
+      if: matrix.build_type == 'Debug' && matrix.architecture == 'x86_64'
+      uses: actions/upload-artifact@v1
+      with:
+        name: macos_tests
+        path: workspace/macos_tests.tar.gz
 
     # Before we terminate this job, delete the build folder. The cache
     # actions will require the disk space to create the archives.
     - name: Reclaim disk space
       run: |
         rm -rf ${{ steps.build_paths.outputs.BINARY }}
+
+
+
+
+  # The Windows build will only start once we know that the code
+  # has been properly formatted
+  test_macos:
+    needs: build_macos
+
+    runs-on: macos-10.15
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: macos_tests
+
+      - name: Install tests dependencies
+        run: |
+          pip3 install setuptools \
+                      pexpect==3.3 \
+                      psutil \
+                      timeout_decorator \
+                      six \
+                      thrift==0.11.0 \
+                      osquery
+
+      # We have to download CMake from the official website; a simple
+      # caching mechanism has been implemented so that we don't keep
+      # hitting the cmake.org website over and over again at each run
+      - name: Install CMake
+        shell: bash
+        run: |
+          long_ver=3.17.5
+          short_ver=$(echo ${long_ver} | cut -d '.' -f 1-2)
+
+          folder_name="cmake-${long_ver}-Darwin-x86_64"
+          filename="${folder_name}.tar.gz"
+
+          url="https://cmake.org/files/v${short_ver}/${filename}"
+          local_path="$(pwd)/${filename}"
+
+          if [[ ! -f "${local_path}" ]]; then
+            wget "${url}" -O "${local_path}"
+
+            ls -t $(pwd)/cmake* | tail -n +2 | while read archive_file ; do
+              rm "${archive_file}"
+            done
+          fi
+
+          mkdir -p workspace/install
+
+          tar xf "${local_path}" \
+              -C "workspace/install"
+
+          echo "$(pwd)/workspace/install/${folder_name}/CMake.app/Contents/bin" >> $GITHUB_PATH
+
+      - name: Extract the tests
+        run: |
+          tar xzf macos_tests.tar.gz
+
+      - name: Run the tests
+        run: |
+          ( cd macos_tests && ./run.sh )
 
 
 
