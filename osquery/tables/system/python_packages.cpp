@@ -41,6 +41,7 @@ const std::set<std::string> kPythonPath = {
 
 const std::set<std::string> kDarwinPythonPath = {
     "/System/Library/Frameworks/Python.framework/Versions",
+    "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions",
 };
 
 const std::string kWinPythonInstallKey =
