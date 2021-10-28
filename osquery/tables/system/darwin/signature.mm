@@ -29,6 +29,8 @@ namespace osquery {
 namespace tables {
 
 // Empty string runs default verification on a file
+// TODO: we may want to eventually add arm64e to this set. As of October 2021,
+// arm64 and arm64e are aliased and duplicated results are returned.
 std::set<std::string> kCheckedArches{
     "", "i386", "ppc", "arm", "x86_64", "arm64"};
 
