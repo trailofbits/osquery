@@ -18,6 +18,7 @@
 #include <boost/make_unique.hpp>
 
 #include "osquery/tests/test_util.h"
+#include <osquery/config/tests/test_utils.h>
 
 namespace fs = boost::filesystem;
 
@@ -28,29 +29,10 @@ void genSignatureForFile(const std::string& path,
                          bool hashResources,
                          QueryData& results);
 
-// Gets the full path to the current executable (only works on Darwin)
-std::string getExecutablePath() {
-  uint32_t size = 1024;
-
-  while (true) {
-    auto buf = boost::make_unique<char[]>(size);
-
-    if (_NSGetExecutablePath(buf.get(), &size) == 0) {
-      return std::string(buf.get());
-    }
-
-    // If we get here, the buffer wasn't large enough, and we need to
-    // reallocate.  We just continue the loop and will reallocate above.
-  }
-}
-
 // Get the full, real path to the unsigned test executable (only works on
 // Darwin).
 std::string getUnsignedExecutablePath() {
-  auto exe = getExecutablePath();
-  auto path = fs::canonical(exe);
-  path.remove_filename() /= "unsigned_test";
-  return path.string();
+  return (getTestConfigDirectory() / "unsigned_test").string();
 }
 
 class SignatureTest : public testing::Test {
