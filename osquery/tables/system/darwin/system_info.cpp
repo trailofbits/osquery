@@ -25,6 +25,11 @@
 namespace osquery {
 namespace tables {
 
+/**
+ * Get a string from a sysctl name.
+ *
+ * @param name sysctl property name
+ */
 std::string getSysctlString(const std::string& name) {
   size_t len = 0;
   std::string ret;
@@ -85,8 +90,8 @@ static inline void genHardwareInfo(Row& r) {
 
   r["hardware_version"] = getIOKitProperty(properties, "version");
   r["hardware_vendor"] = getIOKitProperty(properties, "manufacturer");
-  r["hardware_serial"] = getIOKitProperty(properties, "IOPlatformSerialNumber");
   r["hardware_model"] = getIOKitProperty(properties, "product-name");
+  r["hardware_serial"] = getIOKitProperty(properties, "IOPlatformSerialNumber");
 
   // version, manufacturer, and product-name have a trailing space
   boost::trim(r["hardware_version"]);
@@ -96,11 +101,11 @@ static inline void genHardwareInfo(Row& r) {
 
   CFRelease(properties);
 
-#ifdef __arm__
+#ifdef __aarch64__
   // Mac ARM / M1 machines have the hardware_model one level deeper, in the
   // IODeviceTree:/product key.
   if (r["hardware_model"].empty()) {
-    auto root =
+    root =
         IORegistryEntryFromPath(kIOMasterPortDefault, "IODeviceTree:/product");
     if (root == MACH_PORT_NULL) {
       VLOG(1) << "Cannot get ARM hardware information from IOKit";
