@@ -8,6 +8,7 @@
  */
 
 #include <mach/mach.h>
+#include <sys/sysctl.h>
 
 #include <IOKit/IOKitLib.h>
 #include <SystemConfiguration/SystemConfiguration.h>
@@ -23,6 +24,24 @@
 
 namespace osquery {
 namespace tables {
+
+std::string getSysctlString(const std::string& name) {
+  size_t len = 0;
+  std::string ret;
+
+  sysctlbyname(name.c_str(), NULL, &len, NULL, 0);
+
+  if (len > 0) {
+    char* value = (char*)malloc(len);
+    if (!sysctlbyname(name.c_str(), value, &len, NULL, 0)) {
+      ret = value;
+    }
+
+    free(value);
+  }
+
+  return ret;
+}
 
 static inline void genHostInfo(Row& r) {
   auto host = mach_host_self();
@@ -66,8 +85,8 @@ static inline void genHardwareInfo(Row& r) {
 
   r["hardware_version"] = getIOKitProperty(properties, "version");
   r["hardware_vendor"] = getIOKitProperty(properties, "manufacturer");
-  r["hardware_model"] = getIOKitProperty(properties, "product-name");
   r["hardware_serial"] = getIOKitProperty(properties, "IOPlatformSerialNumber");
+  r["hardware_model"] = getIOKitProperty(properties, "product-name");
 
   // version, manufacturer, and product-name have a trailing space
   boost::trim(r["hardware_version"]);
@@ -76,6 +95,33 @@ static inline void genHardwareInfo(Row& r) {
   boost::trim(r["hardware_serial"]);
 
   CFRelease(properties);
+
+#ifdef __arm__
+  // Mac ARM / M1 machines have the hardware_model one level deeper, in the
+  // IODeviceTree:/product key.
+  if (r["hardware_model"].empty()) {
+    auto root =
+        IORegistryEntryFromPath(kIOMasterPortDefault, "IODeviceTree:/product");
+    if (root == MACH_PORT_NULL) {
+      VLOG(1) << "Cannot get ARM hardware information from IOKit";
+      return;
+    }
+
+    kr = IORegistryEntryCreateCFProperties(
+        root, &properties, kCFAllocatorDefault, kNilOptions);
+    IOObjectRelease(root);
+
+    if (kr != KERN_SUCCESS) {
+      VLOG(1) << "Cannot get ARM hardware properties from IOKit";
+      return;
+    }
+
+    r["hardware_model"] = getIOKitProperty(properties, "product-name");
+    boost::trim(r["hardware_model"]);
+
+    CFRelease(properties);
+  }
+#endif
 }
 
 QueryData genSystemInfo(QueryContext& context) {
@@ -107,17 +153,12 @@ QueryData genSystemInfo(QueryContext& context) {
   genHostInfo(r);
   genHardwareInfo(r);
 
-  // The CPU brand string also exists in system_controls.
-  auto qd = SQL::selectAllFrom("cpuid");
-  for (const auto& row : qd) {
-    if (row.at("feature") == "product_name") {
-      r["cpu_brand"] = row.at("value");
-      boost::trim(r["cpu_brand"]);
-    }
-  }
+  // The CPU brand string.
+  r["cpu_brand"] = getSysctlString("machdep.cpu.brand_string");
+  boost::trim(r["cpu_brand"]);
 
   results.push_back(r);
   return results;
 }
-}
-}
+} // namespace tables
+} // namespace osquery
