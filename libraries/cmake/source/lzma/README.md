@@ -1,8 +1,15 @@
-# Linux
+# lzma
 
-## x86
+## Linux
 
-Download the tarball version.
+### x86
+
+Using CentOS 6.10 (glibc 2.12). Download the tarball version.
+
+```sh
+ldd --version
+ldd (GNU libc) 2.12
+```
 
 Generated with the following commands:
 
@@ -16,7 +23,14 @@ export CC=clang
 ./configure --disable-xz --disable-xzdec --disable-lzmadec --disable-lzma-links --disable-scripts --disable-doc --enable-static --enable-encoders=lzma1,lzma2,x86,arm,armthumb,delta --enable-decoders=lzma1,lzma2,x86,arm,armthumb,delta --disable-nls
 ```
 
-## AArch64
+### AArch64
+
+Using Ubuntu 16.04 (glibc 2.23).
+
+```sh
+ldd --version
+ldd (GNU libc) 2.23
+```
 
 Install:
 ```
@@ -36,12 +50,12 @@ export CC=clang
 ./configure --disable-xz --disable-xzdec --disable-lzmadec --disable-lzma-links --disable-scripts --disable-doc --enable-static --enable-encoders=lzma1,lzma2,x86,arm,armthumb,delta --enable-decoders=lzma1,lzma2,x86,arm,armthumb,delta --disable-nls
 ```
 
-## Common
+### Common
 
 Then copy
 
 ```sh
-cp ./config.h ../config/linux/<arch>/config.h
+cp ./config.h ../config/ARCH/linux/config.h
 ```
 
 From the build we also add the defines:
@@ -50,31 +64,29 @@ HAVE_CONFIG_H
 TUKLIB_SYMBOL_PREFIX=lzma_
 ```
 
-# macOS
+## macOS
+
+Using macOS 10.15 with XCode 12 and SDK 11.1 on x86_64
 
 Generated with the following commands:
 
-## M1
+### M1
 
 ```sh
 ./autogen.sh
-export CFLAGS="-isysroot /Applications/Xcode_13.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk -target arm64-apple-macos10.15"
-./configure --disable-xz --disable-xzdec --disable-lzmadec --disable-lzma-links --disable-scripts --disable-doc --disable-shared --enable-static --enable-encoders=lzma1,lzma2,x86,arm,armthumb,delta --enable-decoders=lzma1,lzma2,x86,arm,armthumb,delta --disable-nls --host=aarch64-apple-darwin
+CFLAGS="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk -target arm64-apple-macos10.15" ./configure --disable-xz --disable-xzdec --disable-lzmadec --disable-lzma-links --disable-scripts --disable-doc --enable-static --enable-encoders=lzma1,lzma2,x86,arm,armthumb,delta --enable-decoders=lzma1,lzma2,x86,arm,armthumb,delta --disable-nls --host=aarch64-apple-darwin
 ```
 
-## x86_64
+### x86_64
 ```sh
 ./autogen.sh
-CFLAGS="-isysroot /Applications/Xcode_13.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk -target x86_64-apple-macos10.12"
-./configure --disable-xz --disable-xzdec --disable-lzmadec --disable-lzma-links --disable-scripts --disable-doc --disable-shared --enable-static --enable-encoders=lzma1,lzma2,x86,arm,armthumb,delta --enable-decoders=lzma1,lzma2,x86,arm,armthumb,delta --disable-nls
+./configure --disable-xz --disable-xzdec --disable-lzmadec --disable-lzma-links --disable-scripts --disable-doc --enable-static --enable-encoders=lzma1,lzma2,x86,arm,armthumb,delta --enable-decoders=lzma1,lzma2,x86,arm,armthumb,delta --disable-nls
 ```
 
-## Common
-
-Then copy
+Then for both architectures copy
 
 ```sh
-cp ./config.h ../config/macos/<arch>/config.h
+cp ./config.h ../config/ARCH/macos/config.h
 ```
 
 From the build we also add the defines:
@@ -83,7 +95,7 @@ HAVE_CONFIG_H
 TUKLIB_SYMBOL_PREFIX=lzma_
 ```
 
-# Windows
+## Windows
 
 Copy `windows\vs2019\config.h` from the lzma source to `config\x86_64\windows`.
 
@@ -96,11 +108,4 @@ Then comment these defines inside the `config.h` file:
 #define HAVE_ENCODER_IA64 1
 #define HAVE_ENCODER_POWERPC 1
 #define HAVE_ENCODER_SPARC 1
-```
-
-From the build we also add the defines:
-```
-HAVE_CONFIG_H
-TUKLIB_SYMBOL_PREFIX=lzma_
-LZMA_API_STATIC
 ```
