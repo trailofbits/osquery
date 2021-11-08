@@ -114,15 +114,15 @@ function(lzmaMain)
 
   if(DEFINED PLATFORM_LINUX)
     target_include_directories(thirdparty_lzma PRIVATE
-      "${CMAKE_CURRENT_SOURCE_DIR}/config/${TARGET_PROCESSOR}/linux"
+      "${CMAKE_CURRENT_SOURCE_DIR}/config/linux/${TARGET_PROCESSOR}"
     )
   elseif(DEFINED PLATFORM_MACOS)
     target_include_directories(thirdparty_lzma PRIVATE
-      "${CMAKE_CURRENT_SOURCE_DIR}/config/${TARGET_PROCESSOR}/macos"
+      "${CMAKE_CURRENT_SOURCE_DIR}/config/macos/${TARGET_PROCESSOR}"
     )
   elseif(DEFINED PLATFORM_WINDOWS)
     target_include_directories(thirdparty_lzma PRIVATE
-      "${CMAKE_CURRENT_SOURCE_DIR}/config/${TARGET_PROCESSOR}/windows"
+      "${CMAKE_CURRENT_SOURCE_DIR}/config/windows/${TARGET_PROCESSOR}"
     )
   endif()
 

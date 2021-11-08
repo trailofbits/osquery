@@ -152,7 +152,7 @@
 /* #undef HAVE_GETTEXT */
 
 /* Define if you have the iconv() function and it works. */
-#define HAVE_ICONV 1
+/* #undef HAVE_ICONV */
 
 /* Define to 1 if you have the <immintrin.h> header file. */
 /* #undef HAVE_IMMINTRIN_H */
