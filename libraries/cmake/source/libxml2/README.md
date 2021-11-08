@@ -1,70 +1,6 @@
 # Linux
 
-## x86_64
-
-```bash
-cat /etc/issue
-CentOS release 6.10 (Final)
-Kernel \r on an \m
-```
-
-```bash
-ldd --version
-ldd (GNU libc) 2.12.2
-```
-
-```bash
-yum info glibc
-
-...
-
-Version     : 2.12
-Release     : 1.212.el6
-
-...
-
-```
-
-## AArch64
-
-```bash
-cat /etc/issue
-Ubuntu 16.04.7 LTS \n \l
-```
-
-```bash
-ldd --version
-ldd (Ubuntu GLIBC 2.23-0ubuntu11.2) 2.23
-```
-
-```bash
-apt show libc-bin
-Package: libc-bin
-Version: 2.23-0ubuntu11.3
-...
-
-```
-
 ## Common
-
-Fix the `FATAL: kernel too old` issue in the toolchain:
-
-```bash
-ln \
-  -sf \
-  /opt/osquery-toolchain/usr/bin/llvm-ar \
-  /opt/osquery-toolchain/usr/bin/ar
-
-ln \
-  -sf \
-  /opt/osquery-toolchain/usr/bin/llvm-ranlib \
-  /opt/osquery-toolchain/usr/bin/ranlib
-
-ln \
-  -sf \
-  /opt/osquery-toolchain/usr/bin/llvm-nm \
-  /opt/osquery-toolchain/usr/bin/nm
-```
 
 Make sure you are working on a clean source folder
 
@@ -132,7 +68,6 @@ cmake \
   -j $(nproc)
 ```
 
-Copy the generated config files: `build/config.h`, `./build/libxml/xmlversion.h`
 
 # macOS
 
@@ -144,7 +79,7 @@ Make sure you are working on a clean source folder
 git reset --hard ; git clean -ffdx
 ```
 
-When building for m1, also pass the following parameter: `-DCMAKE_OSX_ARCHITECTURES=arm64`
+When building for M1, also pass the following parameter: `-DCMAKE_OSX_ARCHITECTURES=arm64` and change `-DCMAKE_OSX_DEPLOYMENT_TARGET` to `10.15`
 
 ```
 cmake \
@@ -198,7 +133,6 @@ cmake \
   -j $(nproc)
 ```
 
-Copy the generated config files: `build/config.h`, `./build/libxml/xmlversion.h`
 
 # Windows
 
@@ -258,4 +192,9 @@ cmake ^
   --config Release
 ```
 
-Copy the generated config files: `build/config.h`, `./build/libxml/xmlversion.h`
+# All Platforms
+
+Copy the generated config files:
+
+`build/config.h` -> `config/<os>/<arch>/`
+`build/libxml/xmlversion.h` -> `version/<os>/<arch>/libxml/`
