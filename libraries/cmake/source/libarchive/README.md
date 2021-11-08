@@ -1,57 +1,24 @@
-# Linux/macOS
+# Linux
 
-## Linux x86_64
+Integrate the osquery-toolchain, using the following file as a starting point: `cmake/toolchain.cmake`. Pass the toolchain like this: `-DOSQUERY_TOOLCHAIN_SYSROOT=/usr/local/osquery-toolchain`
 
-```bash
-cat /etc/issue
-CentOS release 6.10 (Final)
-Kernel \r on an \m
-```
+# macOS
 
-```bash
-ldd --version
-ldd (GNU libc) 2.12.2
-```
+Append the following to the CMake options:
 
-```bash
-yum info glibc
-
-...
-
-Version     : 2.12
-Release     : 1.212.el6
-
-...
+## x86
 
 ```
-
-## Linux Arch64
-
-```bash
-cat /etc/issue
-Ubuntu 16.04.7 LTS \n \l
+-DCMAKE_OSX_SYSROOT=/Applications/Xcode_13.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12 -DCMAKE_OSX_ARCHITECTURES=x86_64
 ```
 
-```bash
-ldd --version
-ldd (Ubuntu GLIBC 2.23-0ubuntu11.2) 2.23
-```
-
-```bash
-apt show libc-bin
-Package: libc-bin
-Version: 2.23-0ubuntu11.3
-...
+## M1
 
 ```
+-DCMAKE_OSX_SYSROOT=/Applications/Xcode_13.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCMAKE_OSX_ARCHITECTURES=arm64
+```
 
-## Common
-
-Linux: integrate the osquery-toolchain, using the following file as a starting point: `cmake/toolchain.cmake`. Pass the toolchain like this: `-DOSQUERY_TOOLCHAIN_SYSROOT=/usr/local/osquery-toolchain`
-
-macOS:
- * x86_64: `-DCMAKE_OSX_SYSROOT=/Applications/Xcode_13.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12 -DCMAKE_OSX_ARCHITECTURES=x86_64`
- * M1: `-DCMAKE_OSX_SYSROOT=/Applications/Xcode_13.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCMAKE_OSX_ARCHITECTURES=arm64`
+## Linux/macOS
 
 ```sh
 cmake \
