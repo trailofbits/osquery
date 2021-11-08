@@ -56,31 +56,31 @@ function(googleLogMain)
   if(DEFINED PLATFORM_LINUX)
     target_include_directories(thirdparty_glog
       PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/linux/private"
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/linux/public"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/linux/${TARGET_PROCESSOR}/private"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/linux/${TARGET_PROCESSOR}/public"
 
       SYSTEM INTERFACE
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/linux/public"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/linux/${TARGET_PROCESSOR}/public"
     )
   elseif(DEFINED PLATFORM_WINDOWS)
     target_include_directories(thirdparty_glog
       PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/windows/private"
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/windows/public"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/windows/${TARGET_PROCESSOR}/private"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/windows/${TARGET_PROCESSOR}/public"
         "${library_root}/src/windows"
 
       SYSTEM INTERFACE
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/windows/public"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/windows/${TARGET_PROCESSOR}/public"
         "${library_root}/src/windows"
     )
   elseif(DEFINED PLATFORM_MACOS)
     target_include_directories(thirdparty_glog
       PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/macos/private"
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/macos/public"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/macos/${TARGET_PROCESSOR}/private"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/macos/${TARGET_PROCESSOR}/public"
 
       SYSTEM INTERFACE
-        "${CMAKE_CURRENT_SOURCE_DIR}/generated/${TARGET_PROCESSOR}/macos/public"
+        "${CMAKE_CURRENT_SOURCE_DIR}/generated/macos/${TARGET_PROCESSOR}/public"
     )
   endif()
 

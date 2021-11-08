@@ -2,13 +2,6 @@
 
 ## x86
 
-Using CentOS 6.10 (glibc 2.12)
-
-```sh
-ldd --version
-ldd (GNU libc) 2.12
-```
-
 Generated with the following commands:
 
 ```sh
@@ -16,13 +9,6 @@ cmake ../ -DCMAKE_BUILD_TYPE=Release -DWITH_TLS=OFF -DWITH_GFLAGS=OFF -DWITH_THR
 ```
 
 ## AArch64
-
-Using Ubuntu 16.04 (glibc 2.23)
-
-```sh
-ldd --version
-ldd (Ubuntu GLIBC 2.23-0ubuntu11.3) 2.23
-```
 
 Generated with the following commands:
 
@@ -40,8 +26,6 @@ cmake -G "Visual Studio 16 2019" -A x64 ../ -DWITH_TLS=OFF -DWITH_GFLAGS=OFF -DW
 
 
 # macOS
-
-Using macOS 11.x with XCode 13 and SDK 11.3 on x86_64
 
 ## x86
 
