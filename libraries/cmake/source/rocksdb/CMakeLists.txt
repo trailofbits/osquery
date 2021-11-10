@@ -338,6 +338,7 @@ function(rocksdbMain)
 
     target_compile_definitions(thirdparty_rocksdb PRIVATE
       HAVE_SSE42
+      HAVE_PCLMUL
     )
 
   elseif(TARGET_PROCESSOR STREQUAL "aarch64")
