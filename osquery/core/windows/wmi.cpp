@@ -361,7 +361,6 @@ Status WmiResultItem::GetVectorOfLongs(const std::string& name,
 }
 
 Expected<WmiRequest, WmiError> WmiRequest::CreateWmiRequest(const std::string& query, std::wstring nspace) {
-  WmiRequest wmi_request();
   std::wstring wql = stringToWstring(query);
 
   HRESULT hr = E_FAIL;
@@ -382,14 +381,17 @@ Expected<WmiRequest, WmiError> WmiRequest::CreateWmiRequest(const std::string& q
                           IID_IWbemLocator,
                           (LPVOID*)&locator);
   if (hr != S_OK) {
-    return createError(WmiError::ConstructionError);
+    return createError(WmiError::ConstructionError)
+      << "WmiRequest creation failed after CoCreateInstance";
   }
+  WmiRequest wmi_request;
   wmi_request.locator_.reset(locator);
 
   IWbemServices* services = nullptr;
   BSTR nspace_str = SysAllocString(nspace.c_str());
   if (nullptr == nspace_str) {
-    return createError(WmiError::ConstructionError);
+    return createError(WmiError::ConstructionError)
+      << "WmiRequest creation failed in nspace_str allocation";
   }
 
   hr = wmi_request.locator_->ConnectServer(nspace_str,
@@ -403,7 +405,8 @@ Expected<WmiRequest, WmiError> WmiRequest::CreateWmiRequest(const std::string& q
   SysFreeString(nspace_str);
 
   if (hr != S_OK) {
-    return createError(WmiError::ConstructionError);
+    return createError(WmiError::ConstructionError)
+      << "WmiRequest creation failed to connect to server";
   }
   wmi_request.services_.reset(services);
 
@@ -411,22 +414,25 @@ Expected<WmiRequest, WmiError> WmiRequest::CreateWmiRequest(const std::string& q
 
   BSTR language_str = SysAllocString(L"WQL");
   if (nullptr == language_str) {
-    return createError(WmiError::ConstructionError);
+    return createError(WmiError::ConstructionError)
+      << "WmiRequest creation failed in language_str allocation";
   }
 
   BSTR wql_str = SysAllocString(wql.c_str());
   if (nullptr == wql_str) {
     SysFreeString(language_str);
-    return createError(WmiError::ConstructionError);
+    return createError(WmiError::ConstructionError)
+      << "WmiRequest creation failed in wql_str allocation";
   }
 
-  hr = services_->ExecQuery(
+  hr = wmi_request.services_->ExecQuery(
       language_str, wql_str, WBEM_FLAG_FORWARD_ONLY, nullptr, &wbem_enum);
 
   SysFreeString(wql_str);
   SysFreeString(language_str);
   if (hr != S_OK) {
-    return createError(WmiError::ConstructionError);
+    return createError(WmiError::ConstructionError)
+      << "WmiRequest creation failed in ExecQuery";
   }
 
   wmi_request.enum_.reset(wbem_enum);
