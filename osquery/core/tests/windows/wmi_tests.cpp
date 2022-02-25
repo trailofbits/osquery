@@ -77,10 +77,11 @@ TEST_F(WmiTests, test_methodcall_inparams) {
 }
 
 TEST_F(WmiTests, test_methodcall_outparams) {
-  Expected<WmiRequest, WmiError> req = WmiRequest::CreateWmiRequest(
+  Expected<WmiRequest, WmiError> expected_req = WmiRequest::CreateWmiRequest(
       "SELECT * FROM Win32_Process WHERE Name = \"wininit.exe\"");
-  EXPECT_TRUE(req);
-  const auto& wmiResults = req->results();
+  EXPECT_TRUE(expected_req);
+  const WmiRequest& req = expected_req.get();
+  const auto& wmiResults = req.results();
 
   // We should expect only one wininit.exe instance?
   EXPECT_EQ(wmiResults.size(), 1);
@@ -90,7 +91,7 @@ TEST_F(WmiTests, test_methodcall_outparams) {
 
   // Get the first item off the result vector since we should only have one.
   auto& resultItem = wmiResults.front();
-  auto status = req->ExecMethod(resultItem, "GetOwner", args, out);
+  auto status = req.ExecMethod(resultItem, "GetOwner", args, out);
 
   // We use this check to make debugging errors faster
   EXPECT_EQ(status.getMessage(), "OK");

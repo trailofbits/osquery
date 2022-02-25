@@ -259,7 +259,7 @@ class WmiRequest {
                     WmiResultItem& out_result) const;
 
  private:
-  WmiRequest();
+  WmiRequest() = default;
   Status status_;
   std::vector<WmiResultItem> results_;
 
