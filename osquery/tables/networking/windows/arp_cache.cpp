@@ -13,6 +13,7 @@
 
 #include <osquery/utils/conversions/tryto.h>
 #include <osquery/core/windows/wmi.h>
+#include <osquery/logger/logger.h>
 #include <osquery/tables/networking/windows/interfaces.h>
 
 namespace osquery {
