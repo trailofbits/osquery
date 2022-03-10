@@ -11,6 +11,7 @@
 #include <fstream>
 
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include <gtest/gtest.h>
 
@@ -593,6 +594,17 @@ TEST_F(FilesystemTests, test_read_empty_file) {
   ASSERT_TRUE(writeTextFile(test_file, "").ok());
   ASSERT_TRUE(fs::is_empty(test_file));
 
+  std::string content;
+  ASSERT_TRUE(readFile(test_file, content));
+  ASSERT_TRUE(content.empty());
+}
+
+TEST_F(FilesystemTests, test_read_fifo) {
+  auto test_file = test_working_dir_ / "fifo";
+  ASSERT_EQ(::mkfifo(test_file.c_str(), S_IRUSR | S_IWUSR), 0);
+
+  // The failure behavior is that this test will just hang forever, so
+  // maybe it should be run in another thread with a timeout.
   std::string content;
   ASSERT_TRUE(readFile(test_file, content));
   ASSERT_TRUE(content.empty());
