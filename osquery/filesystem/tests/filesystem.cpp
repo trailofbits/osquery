@@ -24,7 +24,6 @@
 #include <osquery/logger/logger.h>
 #include <osquery/process/process.h>
 
-#include <osquery/utils/conversions/windows/strings.h>
 #include <osquery/utils/info/platform_type.h>
 
 #include <osquery/filesystem/mock_file_structure.h>
@@ -36,6 +35,7 @@
 
 #ifdef WIN32
 #include "winbase.h"
+#include <osquery/utils/conversions/windows/strings.h>
 #endif
 
 namespace fs = boost::filesystem;
@@ -618,6 +618,7 @@ TEST_F(FilesystemTests, test_read_fifo) {
   std::string content;
   ASSERT_TRUE(readFile(test_file, content));
   ASSERT_TRUE(content.empty());
+  ::unlink(test_file.c_str());
 #else
   std::wstring pipe_name = stringToWstring("\\.pipe\test_pipe");
   HANDLE pipe_handle = CreateNamedPipe(pipe_name.c_str(),
