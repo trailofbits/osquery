@@ -157,3 +157,6 @@
 [submodule "libraries/cmake/source/aws-sdk-cpp/src/aws-sdk-cpp"]
 	path = libraries/cmake/source/aws-sdk-cpp/src/aws-sdk-cpp
 	url = https://github.com/aws/aws-sdk-cpp
+[submodule "osquery/experimental/experiments/bpf_network_events/libraries/networkevents/src"]
+	path = osquery/experimental/experiments/bpf_network_events/libraries/networkevents/src
+	url = git@github.com:trailofbits/netevents

@@ -50,6 +50,10 @@
 #include <osquery/utils/system/system.h>
 #include <osquery/utils/system/time.h>
 
+#if defined(OSQUERY_BUILD_EXPERIMENTS)
+#include <osquery/experiments/loader.h>
+#endif
+
 #ifdef __linux__
 #include <sys/syscall.h>
 
@@ -662,6 +666,11 @@ void Initializer::start() const {
   if (shutdownRequested()) {
     return;
   }
+
+  // Initialize experiments
+#if defined(OSQUERY_BUILD_EXPERIMENTS)
+  loadExperiments();
+#endif
 
   EventFactory::delay();
 }

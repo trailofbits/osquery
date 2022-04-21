@@ -34,6 +34,7 @@ function(generateOsqueryCoreInit)
     osquery_numericmonitoring
     osquery_extensions
     osquery_distributed
+    osquery_experiments_loader
   )
 
   target_link_libraries(osquery_core_init PUBLIC
