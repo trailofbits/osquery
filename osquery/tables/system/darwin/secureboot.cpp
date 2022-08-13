@@ -153,18 +153,18 @@ QueryData genSecureBoot(QueryContext& context) {
     return {};
   }
 
-  int column_value{};
+  int secure_mode{};
   switch (mode) {
   case SecureBootMode::FullSecurity:
-    column_value = 1;
+    secure_mode = 1;
     break;
 
   case SecureBootMode::MediumSecurity:
-    column_value = 2;
+    secure_mode = 2;
     break;
 
   case SecureBootMode::NoSecurity:
-    column_value = 0;
+    secure_mode = 0;
     break;
 
   default:
@@ -173,7 +173,8 @@ QueryData genSecureBoot(QueryContext& context) {
   }
 
   Row row;
-  row["secure_boot"] = BIGINT(column_value);
+  row["secure_boot"] = BIGINT(secure_mode != 0);
+  row["secure_mode"] = BIGINT(secure_mode);
 
   return {row};
 }

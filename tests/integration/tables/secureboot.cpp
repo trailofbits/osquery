@@ -28,8 +28,14 @@ TEST_F(Secureboot, test_sanity) {
 
   ValidationMap row_map = {
       {"secure_boot", IntOrEmpty},
-      {"setup_mode", IntOrEmpty},
   };
+
+  if (isPlatform(PlatformType::TYPE_WINDOWS) ||
+      isPlatform(PlatformType::TYPE_LINUX)) {
+    row_map.emplace("setup_mode", IntOrEmpty);
+  } else if (isPlatform(PlatformType::TYPE_OSX)) {
+    row_map.emplace("secure_mode", IntOrEmpty);
+  }
   validate_rows(data, row_map);
 }
 
