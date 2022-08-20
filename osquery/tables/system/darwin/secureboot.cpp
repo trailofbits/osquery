@@ -23,9 +23,9 @@ namespace osquery::tables {
 namespace {
 
 enum class SecureBootMode {
+  NoSecurity,
   FullSecurity,
   MediumSecurity,
-  NoSecurity,
 };
 
 struct IoRegistryEntryDeleter final {
@@ -78,51 +78,45 @@ bool openRegistryEntry(UniqueIoRegistryEntry& entry, const std::string& path) {
   return true;
 }
 
-bool getSecureBootSetting(SecureBootMode& mode) {
-  mode = SecureBootMode::NoSecurity;
-
-  UniqueIoRegistryEntry options_entry;
-  if (!openRegistryEntry(options_entry, kOptionsRegistryEntryPath.c_str())) {
+bool createCFStringVariable(UniqueCFStringRef& name,
+                            const std::string& variable) {
+  auto name_ref = CFStringCreateWithCString(
+      kCFAllocatorDefault, kVariableName.c_str(), kCFStringEncodingUTF8);
+  if (name_ref == nullptr) {
     return false;
   }
 
-  UniqueCFStringRef name;
+  name.reset(name_ref);
+  return true;
+}
 
-  {
-    auto name_ref = CFStringCreateWithCString(
-        kCFAllocatorDefault, kVariableName.c_str(), kCFStringEncodingUTF8);
-
-    if (name_ref == 0) {
-      return false;
-    }
-
-    name.reset(name_ref);
+bool createIORegisteryEntry(UniqueIoRegistryEntry& options,
+                            UniqueCFStringRef& name,
+                            UniqueCFTypeRef& value) {
+  auto value_ref =
+      IORegistryEntryCreateCFProperty(options.get(), name.get(), 0, 0);
+  if (value_ref == nullptr) {
+    return false;
   }
 
-  UniqueCFTypeRef value;
+  value.reset(value_ref);
+  return true;
+}
 
-  {
-    auto value_ref =
-        IORegistryEntryCreateCFProperty(options_entry.get(), name.get(), 0, 0);
-
-    if (value_ref == 0) {
-      return false;
-    }
-
-    if (CFGetTypeID(value_ref) != CFDataGetTypeID()) {
-      return false;
-    }
-
-    value.reset(value_ref);
+Status getSecureBootModeFromValue(UniqueCFTypeRef& value,
+                                  SecureBootMode& mode) {
+  if (CFGetTypeID(value.get()) != CFDataGetTypeID()) {
+    return Status::failure("Mismatch type ID for the variable: " +
+                           kVariableName);
   }
 
   auto data_length = CFDataGetLength(static_cast<CFDataRef>(value.get()));
   if (data_length != 1) {
-    return false;
+    return Status::failure("Cannot get data length for the variable: " +
+                           kVariableName);
   }
 
   auto data_ptr = CFDataGetBytePtr(static_cast<CFDataRef>(value.get()));
-
   switch (*data_ptr) {
   case 2:
     mode = SecureBootMode::FullSecurity;
@@ -137,44 +131,60 @@ bool getSecureBootSetting(SecureBootMode& mode) {
     break;
 
   default:
-    return false;
+    return Status::failure("Invalid SecureBootMode value");
   }
 
-  return true;
+  return Status::success();
+}
+
+Status getSecureBootSetting(Row& row) {
+  SecureBootMode mode{SecureBootMode::NoSecurity};
+
+  UniqueIoRegistryEntry options_entry;
+  if (!openRegistryEntry(options_entry, kOptionsRegistryEntryPath.c_str())) {
+    return Status::failure("Cannot open registry entry: " +
+                           kOptionsRegistryEntryPath);
+  }
+
+  UniqueCFStringRef name;
+  if (!createCFStringVariable(name, kVariableName)) {
+    return Status::failure("Cannot create CFString for NVRAM variable: " +
+                           kVariableName);
+  }
+
+  // NOTE: Create CF representation of the registry entry's property. This
+  //       creates instantaneous snapshot for the NVRAM variable.
+  //       Secure boot feature is available with Apple T2 chip-set onward and
+  //       NMRAM variable may not be available as one of the registry property
+  //       if secure boot is not supported. Set secure boot flag to 0 in such
+  //       case and return.
+
+  UniqueCFTypeRef value;
+  if (!createIORegisteryEntry(options_entry, name, value)) {
+    LOG(INFO) << "Unable to create snapshot of NVRAM variable: "
+              << kVariableName << ". Secureboot feature does not exist!";
+    return Status::success();
+  }
+
+  auto status = getSecureBootModeFromValue(value, mode);
+  if (!status.ok()) {
+    return status;
+  }
+
+  row["secure_boot"] = BIGINT(mode != SecureBootMode::NoSecurity);
+  row["secure_mode"] = BIGINT(static_cast<int>(mode));
+  return Status::success();
 }
 
 } // namespace
 
 QueryData genSecureBoot(QueryContext& context) {
-  SecureBootMode mode{SecureBootMode::NoSecurity};
-  if (!getSecureBootSetting(mode)) {
-    LOG(ERROR) << "secureboot: Failed to access the following nvram variable: "
-               << kVariableName;
-    return {};
-  }
-
-  int secure_mode{};
-  switch (mode) {
-  case SecureBootMode::FullSecurity:
-    secure_mode = 1;
-    break;
-
-  case SecureBootMode::MediumSecurity:
-    secure_mode = 2;
-    break;
-
-  case SecureBootMode::NoSecurity:
-    secure_mode = 0;
-    break;
-
-  default:
-    LOG(ERROR) << "secureboot: Invalid SecureBootMode value";
-    return {};
-  }
-
   Row row;
-  row["secure_boot"] = BIGINT(secure_mode != 0);
-  row["secure_mode"] = BIGINT(secure_mode);
+  auto status = getSecureBootSetting(row);
+  if (!status.ok()) {
+    LOG(ERROR) << "secureboot error: " << status.toString();
+    return {};
+  }
 
   return {row};
 }
