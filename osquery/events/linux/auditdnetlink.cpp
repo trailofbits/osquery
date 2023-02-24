@@ -287,8 +287,9 @@ bool AuditdNetlinkReader::acquireMessages() noexcept {
                            &nladdrlen);
 
     if (len < 0) {
-      VLOG(1) << "Failed to receive data from the audit netlink";
-      reset_handle = true;
+      VLOG(1) << "Failed to receive data from the audit netlink. errno: "
+              << errno;
+      reset_handle = errno != ENOBUFS;
       break;
     }
 
@@ -717,6 +718,24 @@ NetlinkStatus AuditdNetlinkReader::acquireHandle() noexcept {
     if (!configureAuditService()) {
       return NetlinkStatus::ActiveImmutable;
     }
+  }
+
+  static const int kEnableNoEnobufs{1};
+  if (setsockopt(audit_netlink_handle_,
+                 SOL_SOCKET,
+                 NETLINK_NO_ENOBUFS,
+                 &kEnableNoEnobufs,
+                 sizeof(kEnableNoEnobufs)) != 0) {
+    VLOG(1) << "Failed to set NETLINK_NO_ENOBUFS=" << kEnableNoEnobufs;
+  }
+
+  static const int kSocketBacklogSize{2 * 1024 * 1024};
+  if (setsockopt(audit_netlink_handle_,
+                 SOL_SOCKET,
+                 SO_RCVBUFFORCE,
+                 &kSocketBacklogSize,
+                 sizeof(kSocketBacklogSize)) != 0) {
+    VLOG(1) << "Failed to set SO_RCVBUF=" << kSocketBacklogSize;
   }
 
   return NetlinkStatus::ActiveMutable;
