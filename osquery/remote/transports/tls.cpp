@@ -22,7 +22,7 @@ namespace fs = boost::filesystem;
 
 namespace osquery {
 
-const std::string kTLSUserAgentBase = "osquery/";
+DECLARE_string(http_user_agent);
 
 /// TLS server hostname.
 CLI_FLAG(string,
@@ -91,7 +91,6 @@ TLSTransport::TLSTransport() {
 void TLSTransport::decorateRequest(http::Request& r) {
   r << http::Request::Header("Content-Type", serializer_->getContentType());
   r << http::Request::Header("Accept", serializer_->getContentType());
-  r << http::Request::Header("User-Agent", kTLSUserAgentBase + kVersion);
 }
 
 http::Client::Options TLSTransport::getOptions() {

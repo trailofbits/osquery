@@ -97,6 +97,10 @@ function(generateOsqueryCore)
     ${source_files}
   )
 
+  target_compile_definitions(osquery_core PRIVATE
+    OSQUERY_USER_AGENT_PREFIX=${OSQUERY_USER_AGENT_PREFIX}
+  )
+
   set(dependencies
     osquery_cxx_settings
     osquery_core_plugins

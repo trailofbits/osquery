@@ -22,6 +22,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 #include <aws/core/Aws.h>
 #include <aws/core/Region.h>
@@ -155,6 +156,8 @@ static RegionName kDefaultAWSRegion = Aws::Region::US_EAST_1;
 // To protect the access to the AWS instance id and region that are being cached
 static std::mutex cached_values_mutex;
 
+DECLARE_string(http_user_agent);
+
 namespace {
 bool validateIMDSV2RequestAttempts(const char* flagname, std::uint32_t value) {
   if (value == 0) {
@@ -217,7 +220,11 @@ std::shared_ptr<Aws::Http::HttpResponse> OsqueryHttpClient::MakeRequest(
   http::Request req(url);
 
   for (const auto& requestHeader : request.GetHeaders()) {
-    req << http::Request::Header(requestHeader.first, requestHeader.second);
+    /* We don't want to set the AWS SDK user agent, lets skip it
+       and let the HTTP client use its default */
+    if (!boost::iequals(requestHeader.first, "User-Agent")) {
+      req << http::Request::Header(requestHeader.first, requestHeader.second);
+    }
   }
 
   std::string body;
@@ -309,7 +316,7 @@ std::shared_ptr<Aws::Http::HttpResponse> OsqueryHttpClient::MakeRequest(
   }
 
   return response;
-}
+} // namespace osquery
 
 Aws::Auth::AWSCredentials
 OsqueryFlagsAWSCredentialsProvider::GetAWSCredentials() {

@@ -300,6 +300,11 @@ The URI path which will be used, in conjunction with `--tls_hostname`, to create
 
 The total number of attempts that will be made to the remote distributed query server if a request fails when using the **tls** distributed plugin.
 
+`--http_user_agent=`
+
+The default HTTP user agent to be used by all communications.  
+The default value is a concatenation of the content of the CMake build flags OSQUERY_USER_AGENT_PREFIX and OSQUERY_VERSION.
+
 ## Daemon runtime control flags
 
 `--schedule_splay_percent=10`
