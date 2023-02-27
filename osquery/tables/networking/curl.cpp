@@ -23,9 +23,9 @@
 #include <osquery/core/tables.h>
 
 namespace osquery {
-namespace tables {
 
-const std::string kOsqueryUserAgent{"osquery"};
+DECLARE_string(http_user_agent);
+namespace tables {
 
 Status processRequest(Row& r) {
   try {
@@ -76,7 +76,7 @@ QueryData genCurl(QueryContext& context) {
     r["url"] = request;
     r["method"] = "GET";
     r["user_agent"] =
-        user_agents.empty() ? kOsqueryUserAgent : *(user_agents.begin());
+        user_agents.empty() ? FLAGS_http_user_agent : *(user_agents.begin());
 
     auto status = processRequest(r);
     if (!status.ok()) {

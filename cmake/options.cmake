@@ -129,6 +129,8 @@ if(DEFINED PLATFORM_POSIX)
   option(OSQUERY_ENABLE_CCACHE "Whether to search ccache in the system and use it in the build" ON)
 endif()
 
+set(OSQUERY_USER_AGENT_PREFIX "osquery/" CACHE STRING "Default user agent prefix")
+
 set(third_party_source_list "source;formula")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" CACHE STRING "A list of paths containing CMake module files")

@@ -19,6 +19,7 @@
 #include <sstream>
 #include <string>
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -158,6 +159,7 @@ static std::mutex cached_values_mutex;
 
 DECLARE_string(aws_firehose_region);
 DECLARE_string(aws_kinesis_region);
+DECLARE_string(http_user_agent);
 
 namespace {
 bool validateIMDSV2RequestAttempts(const char* flagname, std::uint32_t value) {
@@ -344,7 +346,11 @@ std::shared_ptr<Aws::Http::HttpResponse> OsqueryHttpClient::MakeRequest(
   http::Request req(url);
 
   for (const auto& requestHeader : request.GetHeaders()) {
-    req << http::Request::Header(requestHeader.first, requestHeader.second);
+    /* We don't want to set the AWS SDK user agent, lets skip it
+       and let the HTTP client use its default */
+    if (!boost::iequals(requestHeader.first, "User-Agent")) {
+      req << http::Request::Header(requestHeader.first, requestHeader.second);
+    }
   }
 
   std::string body;
@@ -436,7 +442,7 @@ std::shared_ptr<Aws::Http::HttpResponse> OsqueryHttpClient::MakeRequest(
   }
 
   return response;
-}
+} // namespace osquery
 
 Aws::Auth::AWSCredentials
 OsqueryFlagsAWSCredentialsProvider::GetAWSCredentials() {

@@ -13,6 +13,9 @@
 #include <boost/asio/connect.hpp>
 
 namespace osquery {
+
+DECLARE_string(http_user_agent);
+
 namespace http {
 
 const std::string kHTTPSDefaultPort{"443"};
@@ -362,6 +365,12 @@ bool Client::initHTTPRequest(Request& req) {
     }
     closeSocket();
   }
+
+  // If there's no User-Agent set, use the default one
+  if (req.find("User-Agent") == req.end()) {
+    req << Request::Header("User-Agent", FLAGS_http_user_agent);
+  }
+
   return create_connection;
 }
 

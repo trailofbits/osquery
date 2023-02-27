@@ -77,6 +77,11 @@ FLAG(string,
      "",
      "Field used to specify the host_identifier when set to \"specified\"");
 
+CLI_FLAG(string,
+         http_user_agent,
+         STR(OSQUERY_USER_AGENT_PREFIX) STR(OSQUERY_VERSION),
+         "Default user agent to use for communications");
+
 // Deprecated, unused. Exists for backwards compatibility with existing config
 // files.
 HIDDEN_FLAG(
