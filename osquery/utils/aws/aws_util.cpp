@@ -220,10 +220,11 @@ std::shared_ptr<Aws::Http::HttpResponse> OsqueryHttpClient::MakeRequest(
   http::Request req(url);
 
   for (const auto& requestHeader : request.GetHeaders()) {
-    /* We don't want to set the AWS SDK user agent, lets skip it
-       and let the HTTP client use its default */
-    if (!boost::iequals(requestHeader.first, "User-Agent")) {
-      req << http::Request::Header(requestHeader.first, requestHeader.second);
+    // Prepend the osquery user agent to the AWS SDK agent
+    if (boost::iequals(requestHeader.first, "User-Agent")) {
+      req << http::Request::Header(
+          requestHeader.first,
+          FLAGS_http_user_agent + " " + requestHeader.second);
     }
   }
 
