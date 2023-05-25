@@ -60,8 +60,11 @@ CLI_FLAG(uint32,
          3600,
          "TLS session keep alive timeout in seconds");
 
-#ifndef MY_NDEBUG
-const bool FLAGS_tls_allow_unsafe{true};
+#ifndef NDEBUG
+HIDDEN_FLAG(bool,
+            tls_allow_unsafe,
+            false,
+            "Allow TLS server certificate trust failures");
 #endif
 
 HIDDEN_FLAG(bool,
@@ -106,7 +109,7 @@ http::Client::Options TLSTransport::getOptions() {
 
       auto status = fs::status(server_certificate_file_, ec);
 
-#ifndef MY_NDEBUG
+#ifndef NDEBUG
       if (!FLAGS_tls_allow_unsafe) {
         // In unsafe mode we skip verification of the server's TLS details
         // to allow people to connect to devservers
@@ -122,7 +125,7 @@ http::Client::Options TLSTransport::getOptions() {
         LOG(WARNING) << "Cannot set a non-regular file as a certificate: "
                      << server_certificate_file_;
       } else {
-#ifndef MY_NDEBUG
+#ifndef NDEBUG
         if (!FLAGS_tls_allow_unsafe) {
 #else
         if (true) {
@@ -133,7 +136,7 @@ http::Client::Options TLSTransport::getOptions() {
     }
   }
 
-#ifndef MY_NDEBUG
+#ifndef NDEBUG
   // Configuration may allow unsafe TLS testing if compiled as a debug target.
   if (FLAGS_tls_allow_unsafe) {
     options.always_verify_peer(false);
