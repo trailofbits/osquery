@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <osquery/core/plugins/logger.h>
+#include <osquery/database/database.h>
 #include <osquery/dispatcher/dispatcher.h>
 
 namespace osquery {
@@ -175,16 +176,19 @@ class BufferedLogForwarder : public InternalRunnable {
    * @brief Add a database value while maintaining count
    *
    */
-  Status addValueWithCount(const std::string& domain,
-                           const std::string& key,
-                           const std::string& value);
+  Status addValueWithCount(const std::string& key, const std::string& value);
 
   /**
    * @brief Delete a database value while maintaining count
    *
    */
-  Status deleteValueWithCount(const std::string& domain,
-                              const std::string& key);
+  Status deleteValueWithCount(const std::string& key);
+
+  /**
+   * @brief Flushes all pending database inserts
+   *
+   */
+  Status flushDatabaseInsertQueue(bool force);
 
  protected:
   /// Seconds between flushing logs
@@ -211,5 +215,11 @@ class BufferedLogForwarder : public InternalRunnable {
 
   /// Protects the count of buffered logs
   RecursiveMutex count_mutex_;
+
+  /// A list of key/values that have yet to be flushed to database
+  DatabaseStringValueList key_value_insert_queue_;
+
+  /// When was the last time that the insert queue was flushed
+  std::time_t last_insert_queue_flush{};
 };
 }

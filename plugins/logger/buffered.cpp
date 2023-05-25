@@ -18,7 +18,6 @@
 
 #include <osquery/core/flags.h>
 #include <osquery/core/system.h>
-#include <osquery/database/database.h>
 #include <osquery/logger/logger.h>
 #include <osquery/registry/registry.h>
 #include <osquery/utils/info/version.h>
@@ -29,6 +28,13 @@
 namespace pt = boost::property_tree;
 
 namespace osquery {
+
+namespace {
+
+const std::size_t kMinInsertQueueSize{100};
+const std::time_t kInsertQueueFlushInterval{5};
+
+} // namespace
 
 FLAG(uint64,
      buffered_log_max,
@@ -54,6 +60,11 @@ Status BufferedLogForwarder::setUp() {
 }
 
 void BufferedLogForwarder::check() {
+  {
+    RecursiveLock lock(count_mutex_);
+    flushDatabaseInsertQueue(true);
+  }
+
   // Get a list of all the buffered log items, with a max of 1024 lines.
   std::vector<std::string> indexes;
   auto status = scanDatabaseKeys(kLogs, indexes, index_name_, max_log_lines_);
@@ -83,7 +94,7 @@ void BufferedLogForwarder::check() {
                 if (!isResultIndex(index)) {
                   return;
                 }
-                deleteValueWithCount(kLogs, index);
+                deleteValueWithCount(index);
               }));
     }
   }
@@ -102,7 +113,7 @@ void BufferedLogForwarder::check() {
                 if (!isStatusIndex(index)) {
                   return;
                 }
-                deleteValueWithCount(kLogs, index);
+                deleteValueWithCount(index);
               }));
     }
   }
@@ -115,6 +126,8 @@ void BufferedLogForwarder::check() {
 
 void BufferedLogForwarder::purge() {
   RecursiveLock lock(count_mutex_);
+  flushDatabaseInsertQueue(true);
+
   if (buffer_count_ <= FLAGS_buffered_log_max) {
     return;
   }
@@ -169,7 +182,7 @@ void BufferedLogForwarder::purge() {
 
   // Now only indexes of logs to be deleted remain
   iterate(indexes, [this](const std::string& index) {
-    if (!deleteValueWithCount(kLogs, index).ok()) {
+    if (!deleteValueWithCount(index).ok()) {
       LOG(ERROR) << "Error deleting value during buffered log purge";
     }
   });
@@ -186,7 +199,7 @@ void BufferedLogForwarder::start() {
 
 Status BufferedLogForwarder::logString(const std::string& s, uint64_t time) {
   std::string index = genResultIndex(time);
-  return addValueWithCount(kLogs, index, s);
+  return addValueWithCount(index, s);
 }
 
 Status BufferedLogForwarder::logStatus(const std::vector<StatusLogLine>& log,
@@ -231,7 +244,7 @@ Status BufferedLogForwarder::logStatus(const std::vector<StatusLogLine>& log,
       json.pop_back();
     }
     std::string index = genStatusIndex(time);
-    Status status = addValueWithCount(kLogs, index, json);
+    Status status = addValueWithCount(index, json);
     if (!status.ok()) {
       // Do not continue if any line fails.
       return status;
@@ -274,20 +287,16 @@ std::string BufferedLogForwarder::genIndex(bool results, uint64_t time) {
          std::to_string(++log_index_);
 }
 
-Status BufferedLogForwarder::addValueWithCount(const std::string& domain,
-                                               const std::string& key,
+Status BufferedLogForwarder::addValueWithCount(const std::string& key,
                                                const std::string& value) {
-  Status status = setDatabaseValue(domain, key, value);
-  if (status.ok()) {
-    RecursiveLock lock(count_mutex_);
-    buffer_count_++;
-  }
-  return status;
+  RecursiveLock lock(count_mutex_);
+  key_value_insert_queue_.push_back(std::make_pair(key, value));
+
+  return flushDatabaseInsertQueue(false);
 }
 
-Status BufferedLogForwarder::deleteValueWithCount(const std::string& domain,
-                                                  const std::string& key) {
-  Status status = deleteDatabaseValue(domain, key);
+Status BufferedLogForwarder::deleteValueWithCount(const std::string& key) {
+  Status status = deleteDatabaseValue(kLogs, key);
   if (status.ok()) {
     RecursiveLock lock(count_mutex_);
     if (buffer_count_ > 0) {
@@ -296,4 +305,38 @@ Status BufferedLogForwarder::deleteValueWithCount(const std::string& domain,
   }
   return status;
 }
+
+Status BufferedLogForwarder::flushDatabaseInsertQueue(bool force) {
+  if (last_insert_queue_flush == 0) {
+    last_insert_queue_flush = std::time(nullptr);
+  }
+
+  if (key_value_insert_queue_.empty()) {
+    return Status::success();
+  }
+
+  if (!force) {
+    auto time_since_last_flush = std::time(nullptr) - last_insert_queue_flush;
+
+    if (key_value_insert_queue_.size() < kMinInsertQueueSize &&
+        time_since_last_flush < kInsertQueueFlushInterval) {
+      return Status::success();
+    }
+  }
+
+  Status status = setDatabaseBatch(kLogs, key_value_insert_queue_);
+  if (status.ok()) {
+    LOG(INFO) << "Flushed " << key_value_insert_queue_.size()
+              << " rows with an batch insert (forced="
+              << (force ? "true" : "false") << ")";
+
+    buffer_count_ += key_value_insert_queue_.size();
+    key_value_insert_queue_.clear();
+
+    last_insert_queue_flush = std::time(nullptr);
+  }
+
+  return status;
+}
+
 } // namespace osquery
