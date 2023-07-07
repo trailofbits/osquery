@@ -47,6 +47,7 @@ function(generateOsqueryEvents)
       darwin/es_utils.cpp
       darwin/endpointsecurity.cpp
       darwin/endpointsecurity_fim.cpp
+      darwin/endpointsecurity_socketevents.cpp
       darwin/event_taps.cpp
       darwin/fsevents.cpp
       darwin/iokit.cpp

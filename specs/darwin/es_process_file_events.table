@@ -5,7 +5,7 @@ schema([
     Column("seq_num", BIGINT, "Per event sequence number"),
     Column("global_seq_num", BIGINT, "Global sequence number"),
     Column("pid", BIGINT, "Process (or thread) ID"),
-     Column("parent", BIGINT, "Parent process ID"),
+    Column("parent", BIGINT, "Parent process ID"),
     Column("path", TEXT, "Path of executed file"),
     Column("filename", TEXT, "The source or target filename for the event"),
     Column("dest_filename", TEXT, "Destination filename for the event"),

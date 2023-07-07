@@ -17,15 +17,15 @@
 
 namespace osquery {
 
-FLAG(bool,
-     disable_endpointsecurity,
-     true,
-     "Disable receiving events from the EndpointSecurity subsystem");
+CLI_FLAG(bool,
+         disable_endpointsecurity,
+         true,
+         "Disable receiving events from the EndpointSecurity subsystem");
 
-FLAG(bool,
-     disable_endpointsecurity_fim,
-     true,
-     "Disable file events from the EndpointSecurity subsystem");
+CLI_FLAG(bool,
+         disable_endpointsecurity_fim,
+         true,
+         "Disable file events from the EndpointSecurity subsystem");
 
 FLAG(string,
      es_fim_mute_path_literal,
@@ -39,6 +39,11 @@ FLAG(string,
 
 // document performance issues
 FLAG(bool, es_fim_enable_open_events, false, "Enable open events");
+
+CLI_FLAG(bool,
+         disable_endpointsecurity_socketevents,
+         true,
+         "Disable socket events from the EndpointSecurity subsystem");
 
 std::string getEsNewClientErrorMessage(const es_new_client_result_t r) {
   switch (r) {

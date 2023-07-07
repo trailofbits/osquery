@@ -1,0 +1,19 @@
+table_name("es_process_socket_events")
+description("Track Unix Domain socket binds and connects.")
+schema([
+    Column("version", INTEGER, "Version of EndpointSecurity event"),
+    Column("seq_num", BIGINT, "Per event sequence number"),
+    Column("global_seq_num", BIGINT, "Global sequence number"),
+    Column("pid", BIGINT, "Process (or thread) ID"),
+    Column("parent", BIGINT, "Parent process ID"),
+    Column("path", TEXT, "Path of the process causing the event"),
+    Column("family", INTEGER, "The Internet protocol family ID"),
+    Column("protocol", INTEGER, "The network protocol ID"),
+    Column("type", INTEGER, "The socket type, among SOCK_STREAM(1), SOCK_DGRAM(2), SOCK_RAW(3)"),
+    Column("socket", TEXT, "The local path (UNIX domain socket only)"),
+    Column("event_type", TEXT, "Type of EndpointSecurity event, among connect and bind"),
+    Column("time", BIGINT, "Time of execution in UNIX time", additional=True),
+    Column("eid", TEXT, "Event ID", hidden=True),
+])
+attributes(event_subscriber=True)
+implementation("events/darwin/es_process_socket_events@es_process_socket_events::genTable")

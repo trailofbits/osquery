@@ -103,6 +103,25 @@ struct EndpointSecurityFileEventContext : EndpointSecurityEventContext {
 using EndpointSecurityFileEventContextRef =
     std::shared_ptr<EndpointSecurityFileEventContext>;
 
+struct EndpointSecuritySocketSubscriptionContext : public SubscriptionContext {
+  std::vector<es_event_type_t> es_socket_event_subscriptions_;
+  std::vector<Row> row_list;
+};
+
+using EndpointSecuritySocketSubscriptionContextRef =
+    std::shared_ptr<EndpointSecuritySocketSubscriptionContext>;
+
+struct EndpointSecuritySocketEventContext
+    : public EndpointSecurityEventContext {
+  std::string socket_path;
+  int domain;
+  int protocol;
+  int mode;
+  int type;
+};
+using EndpointSecuritySocketEventContextRef =
+    std::shared_ptr<EndpointSecuritySocketEventContext>;
+
 class EndpointSecurityPublisher
     : public EventPublisher<EndpointSecuritySubscriptionContext,
                             EndpointSecurityEventContext> {
@@ -200,6 +219,45 @@ class EndpointSecurityFileEventPublisher
   // clang-format on
 };
 
+class EndpointSecuritySocketEventPublisher
+    : public EventPublisher<EndpointSecuritySocketSubscriptionContext,
+                            EndpointSecuritySocketEventContext> {
+  DECLARE_PUBLISHER("endpointsecurity_socketevents");
+
+ public:
+  explicit EndpointSecuritySocketEventPublisher(
+      const std::string& name = "EndpointSecuritySocketEventPublisher")
+      : EventPublisher() {
+    runnable_name_ = name;
+  }
+
+  Status setUp() override API_AVAILABLE(macos(10.15));
+
+  void configure() override API_AVAILABLE(macos(10.15));
+
+  void tearDown() override API_AVAILABLE(macos(10.15));
+
+  Status run() override API_AVAILABLE(macos(10.15)) {
+    return Status::success();
+  }
+
+  bool shouldFire(const EndpointSecuritySocketSubscriptionContextRef& sc,
+                  const EndpointSecuritySocketEventContextRef& ec)
+      const override API_AVAILABLE(macos(10.15));
+
+  virtual ~EndpointSecuritySocketEventPublisher() API_AVAILABLE(macos(10.15)) {
+    tearDown();
+  }
+
+ public:
+  static void handleMessage(const es_message_t* message)
+      API_AVAILABLE(macos(10.15));
+
+ private:
+  es_client_s* es_socket_client_{nullptr};
+  bool es_socket_client_success_{false};
+};
+
 class ESProcessEventSubscriber
     : public EventSubscriber<EndpointSecurityPublisher> {
  public:
@@ -223,6 +281,19 @@ class ESProcessFileEventSubscriber
   Status init() override API_AVAILABLE(macos(10.15));
   Status Callback(const EndpointSecurityFileEventContextRef& ec,
                   const EndpointSecurityFileSubscriptionContextRef& sc)
+      API_AVAILABLE(macos(10.15));
+};
+
+class ESProcessSocketEventSubscriber
+    : public EventSubscriber<EndpointSecuritySocketEventPublisher> {
+ public:
+  ESProcessSocketEventSubscriber() {
+    setName("es_process_socket_events");
+  }
+
+  Status init() override API_AVAILABLE(macos(10.15));
+  Status Callback(const EndpointSecuritySocketEventContextRef& ec,
+                  const EndpointSecuritySocketSubscriptionContextRef& sc)
       API_AVAILABLE(macos(10.15));
 };
 } // namespace osquery
